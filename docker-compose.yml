@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  tinyauth:
+    image: steveiliop56/tinyauth:latest
+    container_name: tinyauth
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/users.txt:/data/users.txt
+
+  tinyauth-usermanagement:
+    build: .
+    container_name: tinyauth-usermanagement
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      USERS_FILE_PATH: /data/users.txt
+      SQLITE_PATH: /data/usermanagement.db
+      TINYAUTH_CONTAINER_NAME: tinyauth
+      DOCKER_SOCKET_PATH: /var/run/docker.sock
+      MAIL_BASE_URL: http://localhost:8080
+      SIGNUP_REQUIRE_APPROVAL: "false"
+      SESSION_SECRET: changeme
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+    volumes:
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - tinyauth
