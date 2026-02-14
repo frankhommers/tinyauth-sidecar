@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useFeatures } from '@/context/FeaturesContext'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const { t } = useTranslation()
   const { signupEnabled } = useFeatures()
   const navigate = useNavigate()
+  const { refresh } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState('')
@@ -30,7 +32,8 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await api.post('/auth/login', { username, password })
-      setMsg(t('loginPage.success'))
+      refresh()
+      navigate('/account')
     } catch (e: any) {
       setMsg(e?.response?.data?.error || t('loginPage.error'))
     } finally {
