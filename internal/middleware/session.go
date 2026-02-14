@@ -2,26 +2,14 @@ package middleware
 
 import (
 	"net/http"
-	"sync"
-	"time"
 
 	"tinyauth-usermanagement/internal/config"
 
 	"github.com/gin-gonic/gin"
 )
 
-type cacheEntry struct {
-	username  string
-	expiresAt time.Time
-}
-
-var (
-	authCache sync.Map
-	cacheTTL  = 30 * time.Second
-)
-
 // SessionMiddleware validates requests by forwarding cookies to tinyauth's
-// forwardauth endpoint. Results are cached in-memory for 30 seconds.
+// forwardauth endpoint on every request. No caching.
 func SessionMiddleware(cfg config.Config) gin.HandlerFunc {
 	verifyURL := cfg.TinyauthVerifyURL
 
@@ -31,25 +19,12 @@ func SessionMiddleware(cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		// Build cache key from all cookie values
 		cookieHeader := c.GetHeader("Cookie")
 		if cookieHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
 
-		// Check cache
-		if entry, ok := authCache.Load(cookieHeader); ok {
-			ce := entry.(*cacheEntry)
-			if time.Now().Before(ce.expiresAt) {
-				c.Set("username", ce.username)
-				c.Next()
-				return
-			}
-			authCache.Delete(cookieHeader)
-		}
-
-		// Forward to tinyauth
 		req, err := http.NewRequest("GET", verifyURL, nil)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "auth check failed"})
@@ -76,12 +51,6 @@ func SessionMiddleware(cfg config.Config) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
-
-		// Cache the result
-		authCache.Store(cookieHeader, &cacheEntry{
-			username:  remoteUser,
-			expiresAt: time.Now().Add(cacheTTL),
-		})
 
 		c.Set("username", remoteUser)
 		c.Next()
