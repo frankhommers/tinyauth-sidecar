@@ -195,9 +195,19 @@ func (s *AccountService) syncPasswordTargets(username, plainPassword, hashedPass
 		}()
 	}
 
+	// Look up role for hook filters
+	role := ""
+	if meta := s.store.GetUserMeta(username); meta != nil {
+		role = meta.Role
+	}
+
 	for _, hook := range s.passwordHooks {
 		go func(h provider.PasswordChangeHook) {
-			if err := h.OnPasswordChanged(username, plainPassword); err != nil {
+			if err := h.OnPasswordChanged(provider.PasswordChangeContext{
+				Email:    username,
+				Password: plainPassword,
+				Role:     role,
+			}); err != nil {
 				log.Printf("[password-hook] warning: %v", err)
 			}
 		}(hook)

@@ -29,7 +29,8 @@ func NewWebhookPasswordHook(cfg config.WebhookConfig) PasswordChangeHook {
 		log.Printf("[password-hook] enabled but body is empty")
 		return nil
 	}
-	log.Printf("[password-hook] webhook configured: %s %s", cfg.Method, cfg.URL)
+	log.Printf("[password-hook] webhook configured: %s %s (filters: domains=%v roles=%v emails=%v)",
+		cfg.Method, cfg.URL, cfg.FilterDomains, cfg.FilterRoles, cfg.FilterEmails)
 	return &WebhookPasswordHook{cfg: cfg}
 }
 
@@ -39,19 +40,36 @@ type passwordHookData struct {
 	User     string
 	Domain   string
 	Password string
+	Role     string
 }
 
-func (h *WebhookPasswordHook) OnPasswordChanged(email, newPassword string) error {
+func (h *WebhookPasswordHook) OnPasswordChanged(ctx PasswordChangeContext) error {
+	email := ctx.Email
 	user, domain := email, ""
 	if parts := strings.SplitN(email, "@", 2); len(parts) == 2 {
 		user, domain = parts[0], parts[1]
+	}
+
+	// Check filters (empty = match all)
+	if !matchesFilter(domain, h.cfg.FilterDomains) {
+		log.Printf("[password-hook] skipping %s: domain %q not in filter %v", email, domain, h.cfg.FilterDomains)
+		return nil
+	}
+	if !matchesFilter(ctx.Role, h.cfg.FilterRoles) {
+		log.Printf("[password-hook] skipping %s: role %q not in filter %v", email, ctx.Role, h.cfg.FilterRoles)
+		return nil
+	}
+	if !matchesFilter(email, h.cfg.FilterEmails) {
+		log.Printf("[password-hook] skipping %s: email not in filter %v", email, h.cfg.FilterEmails)
+		return nil
 	}
 
 	data := passwordHookData{
 		Email:    email,
 		User:     user,
 		Domain:   domain,
-		Password: newPassword,
+		Password: ctx.Password,
+		Role:     ctx.Role,
 	}
 
 	urlStr, err := execTmpl("url", h.cfg.URL, data)
@@ -98,6 +116,21 @@ func (h *WebhookPasswordHook) OnPasswordChanged(email, newPassword string) error
 
 	log.Printf("[password-hook] synced for %s (HTTP %d)", email, resp.StatusCode)
 	return nil
+}
+
+// matchesFilter returns true if value matches any entry in the filter list.
+// An empty filter list matches everything.
+func matchesFilter(value string, filter []string) bool {
+	if len(filter) == 0 {
+		return true
+	}
+	lower := strings.ToLower(value)
+	for _, f := range filter {
+		if strings.ToLower(f) == lower {
+			return true
+		}
+	}
+	return false
 }
 
 func execTmpl(name, tmplStr string, data interface{}) (string, error) {

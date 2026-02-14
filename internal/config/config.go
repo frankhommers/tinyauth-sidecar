@@ -98,9 +98,12 @@ type WebhookConfig struct {
 	Method        string            `toml:"method"`
 	ContentType   string            `toml:"content_type"`
 	Body          string            `toml:"body"`
-	Headers       []HeaderEntry     `toml:"headers"`
-	Timeout       int               `toml:"timeout"`
-	SkipTLSVerify bool              `toml:"skip_tls_verify"`
+	Headers        []HeaderEntry `toml:"headers"`
+	Timeout        int           `toml:"timeout"`
+	SkipTLSVerify  bool          `toml:"skip_tls_verify"`
+	FilterDomains  []string      `toml:"filter_domains"`
+	FilterRoles    []string      `toml:"filter_roles"`
+	FilterEmails   []string      `toml:"filter_emails"`
 }
 
 // FileConfig represents the TOML config file structure.
