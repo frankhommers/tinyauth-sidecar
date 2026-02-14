@@ -32,13 +32,14 @@ func main() {
 
 	// Initialize providers
 	passwordTargets := provider.NewPasswordTargetProvider()
+	passwordHook := provider.NewWebhookPasswordHook()
 	smsProvider := provider.NewWebhookSMSProvider()
 
 	usersSvc := service.NewUserFileService(cfg)
 	mailSvc := service.NewMailService(cfg)
 	dockerSvc := service.NewDockerService(cfg)
 	authSvc := service.NewAuthService(cfg, st, usersSvc)
-	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider)
+	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHook)
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{

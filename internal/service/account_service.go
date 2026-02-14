@@ -27,11 +27,18 @@ type AccountService struct {
 	mail            *MailService
 	docker          *DockerService
 	passwordTargets *provider.PasswordTargetProvider
+	passwordHooks   []provider.PasswordChangeHook
 	sms             provider.SMSProvider
 }
 
-func NewAccountService(cfg config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider) *AccountService {
-	return &AccountService{cfg: cfg, store: st, users: users, mail: mail, docker: docker, passwordTargets: passwordTargets, sms: sms}
+func NewAccountService(cfg config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider, passwordHooks ...provider.PasswordChangeHook) *AccountService {
+	var hooks []provider.PasswordChangeHook
+	for _, h := range passwordHooks {
+		if h != nil {
+			hooks = append(hooks, h)
+		}
+	}
+	return &AccountService{cfg: cfg, store: st, users: users, mail: mail, docker: docker, passwordTargets: passwordTargets, passwordHooks: hooks, sms: sms}
 }
 
 func (s *AccountService) RequestPasswordReset(username string) error {
@@ -179,15 +186,22 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword strin
 
 // syncPasswordTargets sends password to all configured webhook targets (fire and forget).
 func (s *AccountService) syncPasswordTargets(username, plainPassword, hashedPassword string) {
-	if s.passwordTargets == nil {
-		return
+	if s.passwordTargets != nil {
+		go func() {
+			errs := s.passwordTargets.SyncPassword(username, plainPassword, hashedPassword)
+			for _, err := range errs {
+				log.Printf("[password-targets] sync error: %v", err)
+			}
+		}()
 	}
-	go func() {
-		errs := s.passwordTargets.SyncPassword(username, plainPassword, hashedPassword)
-		for _, err := range errs {
-			log.Printf("[password-targets] sync error: %v", err)
-		}
-	}()
+
+	for _, hook := range s.passwordHooks {
+		go func(h provider.PasswordChangeHook) {
+			if err := h.OnPasswordChanged(username, plainPassword); err != nil {
+				log.Printf("[password-hook] warning: %v", err)
+			}
+		}(hook)
+	}
 }
 
 // RequestSMSReset sends a reset code via SMS.
