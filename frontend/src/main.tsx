@@ -1,11 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { FeaturesProvider } from './context/FeaturesContext'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { SmartRedirect } from './components/SmartRedirect'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AccountPage from './pages/AccountPage'
 import './i18n'
@@ -19,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <BrowserRouter basename="/manage">
             <Layout>
             <Routes>
-              <Route path='/' element={<Navigate to="/account" replace />} />
+              <Route path='/' element={<SmartRedirect />} />
               <Route path='/reset-password' element={<ResetPasswordPage />} />
               <Route path='/account' element={
                 <ProtectedRoute>
