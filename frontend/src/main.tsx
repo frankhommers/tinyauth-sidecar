@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { FeaturesProvider } from './context/FeaturesContext'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/Layout'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AccountPage from './pages/AccountPage'
 import './i18n'
@@ -20,7 +21,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Routes>
               <Route path='/' element={<Navigate to="/account" replace />} />
               <Route path='/reset-password' element={<ResetPasswordPage />} />
-              <Route path='/account' element={<AccountPage />} />
+              <Route path='/account' element={
+                <ProtectedRoute>
+                  <AccountPage />
+                </ProtectedRoute>
+              } />
             </Routes>
             </Layout>
           </BrowserRouter>
