@@ -28,20 +28,5 @@ func (h *AuthHandler) Check(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// Clear tinyauth session cookies — match the exact attributes tinyauth uses
-	for _, cookie := range c.Request.Cookies() {
-		if cookie.Name != "" {
-			http.SetCookie(c.Writer, &http.Cookie{
-				Name:     cookie.Name,
-				Value:    "",
-				MaxAge:   -1,
-				Path:     "/",
-				Domain:   "",       // let browser match
-				Secure:   true,
-				HttpOnly: true,
-				SameSite: http.SameSiteLaxMode,
-			})
-		}
-	}
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+	c.JSON(http.StatusOK, gin.H{"ok": true, "redirectUrl": h.cfg.TinyauthLogoutURL})
 }

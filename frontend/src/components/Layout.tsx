@@ -13,10 +13,14 @@ export function Layout({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout')
+      const res = await api.post('/auth/logout')
+      const logoutUrl = res.data.redirectUrl
+      if (logoutUrl) {
+        // POST to tinyauth's logout endpoint to clear their session
+        await fetch(logoutUrl, { method: 'POST', credentials: 'include' }).catch(() => {})
+      }
     } catch { /* ignore */ }
-    // Hard reload to clear all state
-    window.location.href = '/manage'
+    window.location.href = '/'
   }
 
   const navItems = [

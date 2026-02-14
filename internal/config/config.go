@@ -22,6 +22,7 @@ type Config struct {
 	SMTPFrom                string
 	MailBaseURL             string
 	TOTPIssuer              string
+	TinyauthBaseURL         string
 	TinyauthVerifyURL       string
 	TinyauthLogoutURL       string
 	TinyauthContainerName   string
@@ -31,7 +32,9 @@ type Config struct {
 }
 
 func Load() Config {
-	return Config{
+	baseURL := strings.TrimRight(getEnv("TINYAUTH_BASEURL", "http://tinyauth:3000"), "/")
+
+	cfg := Config{
 		Port:                  getEnv("PORT", "8080"),
 		UsersFilePath:         getEnv("USERS_FILE_PATH", "/data/users.txt"),
 		ResetTokenTTLSeconds:  getEnvInt64("RESET_TOKEN_TTL_SECONDS", 3600),
@@ -44,13 +47,16 @@ func Load() Config {
 		SMTPFrom:              getEnv("SMTP_FROM", "noreply@example.local"),
 		MailBaseURL:           getEnv("MAIL_BASE_URL", "http://localhost:8080"),
 		TOTPIssuer:            getEnv("TOTP_ISSUER", "tinyauth"),
-		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", "http://tinyauth:3000/api/auth/traefik"),
-		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", "/api/auth/logout"),
+		TinyauthBaseURL:      baseURL,
+		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", baseURL+"/api/auth/traefik"),
+		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", baseURL+"/api/auth/logout"),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
 		SecureCookie:          getEnvBool("SECURE_COOKIE", false),
 		CORSOrigins:           parseCSV(getEnv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080")),
 	}
+
+	return cfg
 }
 
 func getEnv(key, fallback string) string {
