@@ -1,7 +1,7 @@
 # TinyAuth User Management - Webhook Configuration
 # Copy this file to /data/config.toml (or set CONFIG_PATH env var)
 
-# Password change webhooks (array — you can define multiple!)
+# Password change webhooks (array — define as many as you need!)
 # Called after any successful password change (change, reset, signup).
 # Template variables: {{.Email}}, {{.User}} (before @), {{.Domain}} (after @), {{.Password}}
 
@@ -13,11 +13,11 @@ method = "POST"
 content_type = "application/x-www-form-urlencoded"
 body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
 timeout = 10
+headers = [
+  { key = "Authorization", value = "Basic base64-encoded-credentials" }
+]
 
-[password_hooks.headers]
-Authorization = "Basic base64-encoded-credentials"
-
-# Example 2: Notify an external system via webhook
+# Example 2: Notify an external system
 # [[password_hooks]]
 # enabled = false
 # url = "https://hooks.example.com/password-changed"
@@ -25,6 +25,10 @@ Authorization = "Basic base64-encoded-credentials"
 # content_type = "application/json"
 # body = '{"email":"{{.Email}}","event":"password_changed"}'
 # timeout = 5
+# headers = [
+#   { key = "Authorization", value = "Bearer your-token" },
+#   { key = "X-Source", value = "tinyauth" }
+# ]
 
 # SMS webhook
 # Used for sending SMS password reset codes.
@@ -37,7 +41,10 @@ enabled = false
 url = "https://gw.cmtelecom.com/v1.0/message"
 method = "POST"
 content_type = "application/json"
+timeout = 15
+headers = [
+  { key = "Content-Type", value = "application/json" }
+]
 body = '''
 {"messages":{"authentication":{"producttoken":"YOUR_CM_PRODUCT_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}
 '''
-timeout = 15
