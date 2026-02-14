@@ -1,35 +1,35 @@
 import type { ReactNode } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from './theme-toggle'
 import { LanguageSelector } from './language-toggle'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
-import { useFeatures } from '@/context/FeaturesContext'
 import { useAuth } from '@/context/AuthContext'
 import { api } from '../api/client'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
-  const { signupEnabled } = useFeatures()
-  const { loggedIn, refresh } = useAuth()
-  const navigate = useNavigate()
+  const { loggedIn } = useAuth()
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout')
+      const res = await api.post('/auth/logout')
+      if (res.data.redirectUrl) {
+        window.location.href = res.data.redirectUrl
+        return
+      }
     } catch { /* ignore */ }
-    sessionStorage.setItem('explicit_logout', '1')
-    refresh()
-    navigate('/')
+    window.location.href = '/'
   }
 
   const navItems = [
     ...(loggedIn
-      ? [{ label: t('nav.logout'), path: '/', onClick: handleLogout }]
-      : [{ label: t('nav.login'), path: '/' }]),
-    ...(signupEnabled ? [{ label: t('nav.signup'), path: '/signup' }] : []),
+      ? [
+          { label: t('nav.account'), path: '/account' },
+          { label: t('nav.logout'), path: '/', onClick: handleLogout },
+        ]
+      : []),
     { label: t('nav.reset'), path: '/reset-password' },
-    { label: t('nav.account'), path: '/account' },
   ]
 
   return (

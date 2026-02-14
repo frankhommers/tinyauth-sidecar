@@ -50,7 +50,6 @@ func main() {
 	usersSvc := service.NewUserFileService(cfg)
 	mailSvc := service.NewMailService(cfg)
 	dockerSvc := service.NewDockerService(cfg)
-	authSvc := service.NewAuthService(cfg, st, usersSvc)
 	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHooks...)
 
 	r := gin.Default()
@@ -63,16 +62,19 @@ func main() {
 
 	api := r.Group("/manage/api")
 	{
-		api.GET("/auth/sso", middleware.TinyauthSSO(cfg, st))
-
-		authHandler := handler.NewAuthHandler(cfg, authSvc)
-		authHandler.Register(api)
-
+		// Public endpoints (no auth required)
 		public := handler.NewPublicHandler(accountSvc, cfg)
 		public.Register(api)
 
+		// Auth check and logout (behind tinyauth middleware)
 		authed := api.Group("")
-		authed.Use(middleware.SessionMiddleware(cfg, st))
+		authed.Use(middleware.SessionMiddleware(cfg))
+
+		// Auth endpoints
+		authHandler := handler.NewAuthHandler(cfg)
+		authHandler.Register(authed)
+
+		// Account management endpoints
 		accountHandler := handler.NewAccountHandler(accountSvc)
 		accountHandler.Register(authed)
 	}

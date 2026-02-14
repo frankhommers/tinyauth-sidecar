@@ -51,7 +51,7 @@ export default function AccountPage() {
       setProfile(data)
       setPhone(data.phone || '')
     } catch {
-      setMsg(t('accountPage.notLoggedIn'))
+      setProfile(null)
     }
   }
 

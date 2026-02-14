@@ -4,47 +4,36 @@ import (
 	"net/http"
 
 	"tinyauth-usermanagement/internal/config"
-	"tinyauth-usermanagement/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
-	auth *service.AuthService
-	cfg  config.Config
+	cfg config.Config
 }
 
-func NewAuthHandler(cfg config.Config, auth *service.AuthService) *AuthHandler {
-	return &AuthHandler{auth: auth, cfg: cfg}
+func NewAuthHandler(cfg config.Config) *AuthHandler {
+	return &AuthHandler{cfg: cfg}
 }
 
 func (h *AuthHandler) Register(r *gin.RouterGroup) {
-	r.POST("/auth/login", h.Login)
+	r.GET("/auth/check", h.Check)
 	r.POST("/auth/logout", h.Logout)
 }
 
-func (h *AuthHandler) Login(c *gin.Context) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	token, err := h.auth.Login(req.Username, req.Password)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-		return
-	}
-	c.SetCookie(h.cfg.SessionCookieName, token, int(h.cfg.SessionTTLSeconds), "/", "", h.cfg.SecureCookie, true)
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+func (h *AuthHandler) Check(c *gin.Context) {
+	u, _ := c.Get("username")
+	username, _ := u.(string)
+	c.JSON(http.StatusOK, gin.H{"authenticated": true, "username": username})
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	token, _ := c.Cookie(h.cfg.SessionCookieName)
-	_ = h.auth.Logout(token)
-	c.SetCookie(h.cfg.SessionCookieName, "", -1, "/", "", h.cfg.SecureCookie, true)
-	c.SetCookie(h.cfg.SessionCookieName, "", -1, "/manage", "", h.cfg.SecureCookie, true)
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+	// We can't clear tinyauth's cookie (httpOnly, different domain potentially).
+	// Return the tinyauth logout URL so the frontend can redirect there.
+	logoutURL := h.cfg.TinyauthLogoutURL
+	if logoutURL == "" {
+		// Default: just tell the frontend to redirect to the login page
+		logoutURL = "/manage"
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true, "redirectUrl": logoutURL})
 }

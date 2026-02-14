@@ -12,9 +12,6 @@ import (
 type Config struct {
 	Port                    string
 	UsersFilePath           string
-	SessionCookieName       string
-	SessionSecret           string
-	SessionTTLSeconds       int64
 	ResetTokenTTLSeconds    int64
 	DisableSignup          bool
 	SignupRequireApproval   bool
@@ -26,6 +23,7 @@ type Config struct {
 	MailBaseURL             string
 	TOTPIssuer              string
 	TinyauthVerifyURL       string
+	TinyauthLogoutURL       string
 	TinyauthContainerName   string
 	DockerSocketPath        string
 	SecureCookie            bool
@@ -36,11 +34,8 @@ func Load() Config {
 	return Config{
 		Port:                  getEnv("PORT", "8080"),
 		UsersFilePath:         getEnv("USERS_FILE_PATH", "/data/users.txt"),
-		SessionCookieName:     getEnv("SESSION_COOKIE_NAME", "tinyauth_um_session"),
-		SessionSecret:         getEnv("SESSION_SECRET", "dev-secret-change-me"),
-		SessionTTLSeconds:     getEnvInt64("SESSION_TTL_SECONDS", 86400),
 		ResetTokenTTLSeconds:  getEnvInt64("RESET_TOKEN_TTL_SECONDS", 3600),
-		DisableSignup:         getEnvBool("DISABLE_SIGNUP", false),
+		DisableSignup:         getEnvBool("DISABLE_SIGNUP", true),
 		SignupRequireApproval: getEnvBool("SIGNUP_REQUIRE_APPROVAL", false),
 		SMTPHost:              getEnv("SMTP_HOST", ""),
 		SMTPPort:              getEnvInt("SMTP_PORT", 587),
@@ -50,6 +45,7 @@ func Load() Config {
 		MailBaseURL:           getEnv("MAIL_BASE_URL", "http://localhost:8080"),
 		TOTPIssuer:            getEnv("TOTP_ISSUER", "tinyauth"),
 		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", "http://tinyauth:3000/api/auth/traefik"),
+		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", ""),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
 		SecureCookie:          getEnvBool("SECURE_COOKIE", false),

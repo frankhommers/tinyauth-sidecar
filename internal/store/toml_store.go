@@ -19,13 +19,6 @@ type UserMeta struct {
 	Approved bool   `toml:"approved,omitempty"`
 }
 
-// sessionEntry is an in-memory session record.
-type sessionEntry struct {
-	Username  string
-	CreatedAt int64
-	ExpiresAt int64
-}
-
 // resetTokenEntry is an in-memory reset token record.
 type resetTokenEntry struct {
 	Username  string
@@ -58,9 +51,6 @@ type Store struct {
 	mu    sync.RWMutex
 	users map[string]*UserMeta // key = email/username
 
-	sessMu   sync.Mutex
-	sessions map[string]*sessionEntry // key = token
-
 	resetMu     sync.Mutex
 	resetTokens map[string]*resetTokenEntry // key = token
 
@@ -88,7 +78,6 @@ func NewStore(tomlPath string) (*Store, error) {
 	s := &Store{
 		tomlPath:    tomlPath,
 		users:       make(map[string]*UserMeta),
-		sessions:    make(map[string]*sessionEntry),
 		resetTokens: make(map[string]*resetTokenEntry),
 		signups:     make(map[string]*pendingSignup),
 		smsCodes:    make(map[string]*smsResetCode),
@@ -187,43 +176,6 @@ func (s *Store) SetUserMeta(username string, meta *UserMeta) error {
 
 	s.users[username] = meta
 	return s.saveTOML()
-}
-
-// ---------- Sessions (in-memory) ----------
-
-// CreateSession stores a new session token.
-func (s *Store) CreateSession(token, username string, createdAt, expiresAt int64) error {
-	s.sessMu.Lock()
-	defer s.sessMu.Unlock()
-
-	s.sessions[token] = &sessionEntry{
-		Username:  username,
-		CreatedAt: createdAt,
-		ExpiresAt: expiresAt,
-	}
-	return nil
-}
-
-// GetSession retrieves a session by token. Returns username and expiresAt.
-// Returns empty username if not found.
-func (s *Store) GetSession(token string) (username string, expiresAt int64, err error) {
-	s.sessMu.Lock()
-	defer s.sessMu.Unlock()
-
-	sess, ok := s.sessions[token]
-	if !ok {
-		return "", 0, nil
-	}
-	return sess.Username, sess.ExpiresAt, nil
-}
-
-// DeleteSession removes a session by token.
-func (s *Store) DeleteSession(token string) error {
-	s.sessMu.Lock()
-	defer s.sessMu.Unlock()
-
-	delete(s.sessions, token)
-	return nil
 }
 
 // ---------- Reset tokens (in-memory) ----------
