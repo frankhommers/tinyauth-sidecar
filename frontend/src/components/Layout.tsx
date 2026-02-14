@@ -13,13 +13,10 @@ export function Layout({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      const res = await api.post('/auth/logout')
-      if (res.data.redirectUrl) {
-        window.location.href = res.data.redirectUrl
-        return
-      }
+      await api.post('/auth/logout')
     } catch { /* ignore */ }
-    window.location.href = '/'
+    // Hard reload to clear all state
+    window.location.href = '/manage'
   }
 
   const navItems = [

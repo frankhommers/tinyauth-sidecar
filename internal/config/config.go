@@ -45,7 +45,7 @@ func Load() Config {
 		MailBaseURL:           getEnv("MAIL_BASE_URL", "http://localhost:8080"),
 		TOTPIssuer:            getEnv("TOTP_ISSUER", "tinyauth"),
 		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", "http://tinyauth:3000/api/auth/traefik"),
-		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", ""),
+		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", "/api/auth/logout"),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
 		SecureCookie:          getEnvBool("SECURE_COOKIE", false),

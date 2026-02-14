@@ -28,12 +28,20 @@ func (h *AuthHandler) Check(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// We can't clear tinyauth's cookie (httpOnly, different domain potentially).
-	// Return the tinyauth logout URL so the frontend can redirect there.
-	logoutURL := h.cfg.TinyauthLogoutURL
-	if logoutURL == "" {
-		// Default: just tell the frontend to redirect to the login page
-		logoutURL = "/manage"
+	// Clear tinyauth session cookies — match the exact attributes tinyauth uses
+	for _, cookie := range c.Request.Cookies() {
+		if cookie.Name != "" {
+			http.SetCookie(c.Writer, &http.Cookie{
+				Name:     cookie.Name,
+				Value:    "",
+				MaxAge:   -1,
+				Path:     "/",
+				Domain:   "",       // let browser match
+				Secure:   true,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			})
+		}
 	}
-	c.JSON(http.StatusOK, gin.H{"ok": true, "redirectUrl": logoutURL})
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
