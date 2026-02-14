@@ -6,6 +6,32 @@ import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
 
+type NavItem = {
+  label: string
+  path?: string
+  href?: string
+  onClick?: () => void
+}
+
+function NavItemRender({ item, className }: { item: NavItem; className: string }) {
+  if (item.onClick) {
+    return <button onClick={item.onClick} className={className}>{item.label}</button>
+  }
+  if (item.href) {
+    return <a href={item.href} className={className}>{item.label}</a>
+  }
+  return (
+    <NavLink
+      to={item.path!}
+      className={({ isActive }) =>
+        cn(className, isActive && 'bg-primary text-primary-foreground')
+      }
+    >
+      {item.label}
+    </NavLink>
+  )
+}
+
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { loggedIn } = useAuth()
@@ -15,13 +41,15 @@ export function Layout({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
-  const navItems = [
+  const navItems: NavItem[] = [
     ...(loggedIn
       ? [
           { label: t('nav.account'), path: '/account' },
           { label: t('nav.logout'), onClick: handleLogout },
         ]
-      : []),
+      : [
+          { label: t('nav.login'), href: '/' },
+        ]),
     { label: t('nav.reset'), path: '/reset-password' },
   ]
 
@@ -40,58 +68,24 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="relative z-10">
         <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4">
           <nav className="hidden sm:flex items-center gap-1 rounded-md border bg-card/75 p-1 backdrop-blur-md">
-            {navItems.map((item) =>
-              item.onClick ? (
-                <button
-                  key={item.label}
-                  onClick={item.onClick}
-                  className={cn('rounded-sm px-3 py-1.5 text-sm transition-colors hover:bg-accent cursor-pointer')}
-                >
-                  {item.label}
-                </button>
-              ) : (
-                <NavLink
-                  key={item.path}
-                  to={item.path!}
-                  className={({ isActive }) =>
-                    cn(
-                      'rounded-sm px-3 py-1.5 text-sm transition-colors',
-                      isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              )
-            )}
+            {navItems.map((item) => (
+              <NavItemRender
+                key={item.label}
+                item={item}
+                className="rounded-sm px-3 py-1.5 text-sm transition-colors hover:bg-accent cursor-pointer"
+              />
+            ))}
           </nav>
         </div>
         <div className="mx-auto max-w-5xl px-4 sm:hidden">
           <nav className="flex items-center gap-1 rounded-md border bg-card/75 p-1 backdrop-blur-md">
-            {navItems.map((item) =>
-              item.onClick ? (
-                <button
-                  key={item.label}
-                  onClick={item.onClick}
-                  className={cn('flex-1 rounded-sm px-2 py-1.5 text-center text-xs transition-colors hover:bg-accent cursor-pointer')}
-                >
-                  {item.label}
-                </button>
-              ) : (
-                <NavLink
-                  key={item.path}
-                  to={item.path!}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex-1 rounded-sm px-2 py-1.5 text-center text-xs transition-colors',
-                      isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              )
-            )}
+            {navItems.map((item) => (
+              <NavItemRender
+                key={item.label}
+                item={item}
+                className="flex-1 rounded-sm px-2 py-1.5 text-center text-xs transition-colors hover:bg-accent cursor-pointer"
+              />
+            ))}
           </nav>
         </div>
       </header>
