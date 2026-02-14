@@ -18,6 +18,7 @@ export function Layout({ children }: { children: ReactNode }) {
     try {
       await api.post('/auth/logout')
     } catch { /* ignore */ }
+    sessionStorage.setItem('explicit_logout', '1')
     refresh()
     navigate('/')
   }

@@ -19,8 +19,9 @@ export default function LoginPage() {
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Auto-login via tinyauth SSO
+  // Auto-login via tinyauth SSO (skip if user just logged out)
   useEffect(() => {
+    if (sessionStorage.getItem('explicit_logout')) return
     api.get('/auth/sso').then((res) => {
       if (res.data.authenticated) {
         navigate('/account')
@@ -32,6 +33,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await api.post('/auth/login', { username, password })
+      sessionStorage.removeItem('explicit_logout')
       refresh()
       navigate('/account')
     } catch (e: any) {
