@@ -1,0 +1,34 @@
+# TinyAuth User Management - Webhook Configuration
+# Copy this file to /data/config.toml (or set CONFIG_PATH env var)
+
+# Password change webhook
+# Called after any successful password change (change, reset, signup).
+# Useful for syncing passwords to external systems like DirectAdmin.
+#
+# Template variables: {{.Email}}, {{.User}} (before @), {{.Domain}} (after @), {{.Password}}
+[password_hook]
+enabled = false
+url = "https://your-server.com:2222/CMD_API_EMAIL_PW"
+method = "POST"                                          # default: POST
+content_type = "application/x-www-form-urlencoded"       # default
+body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
+timeout = 10                                             # seconds, default: 10
+# skip_tls_verify = false
+
+[password_hook.headers]
+Authorization = "Basic base64-encoded-credentials"
+
+# SMS webhook
+# Used for sending SMS messages (e.g. password reset codes).
+# If not configured here, falls back to SMS_WEBHOOK_* env vars.
+#
+# Template variables: {{.To}} (phone number), {{.Message}}
+[sms]
+enabled = false
+url = "https://gw.cmtelecom.com/v1.0/message"
+method = "POST"                                          # default: POST
+content_type = "application/json"                        # default
+body = '''
+{"messages":{"authentication":{"producttoken":"YOUR_PRODUCT_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}
+'''
+timeout = 15                                             # seconds, default: 15

@@ -44,45 +44,47 @@ sudo docker compose up --build
 - `TINYAUTH_CONTAINER_NAME` (default `tinyauth`)
 - `DOCKER_SOCKET_PATH` (default `/var/run/docker.sock`)
 - `SMTP_*` vars for mail
+- `CONFIG_PATH` (default `/data/config.toml`) — webhook configuration file
 
-## Password change webhook
+## Webhook configuration (`config.toml`)
 
-Optionally call a webhook after any successful password change (change, reset, signup). Useful for syncing passwords to external systems like DirectAdmin email hosting.
+Password sync and SMS webhooks are configured via a TOML file. See [`config.example.toml`](config.example.toml) for a full example.
 
-The webhook is fire-and-forget: if it fails, a warning is logged but the local password change still succeeds.
+Set the path via `CONFIG_PATH` env var (default: `/data/config.toml`).
 
-| Variable | Description | Default |
-|---|---|---|
-| `PASSWORD_HOOK_ENABLED` | Enable the webhook (`true`/`false`) | `false` |
-| `PASSWORD_HOOK_URL` | Webhook URL (Go template, supports `{{.Email}}`, `{{.User}}`, `{{.Domain}}`, `{{.Password}}`) | — |
-| `PASSWORD_HOOK_METHOD` | HTTP method | `POST` |
-| `PASSWORD_HOOK_CONTENT_TYPE` | Content-Type header | `application/x-www-form-urlencoded` |
-| `PASSWORD_HOOK_BODY` | Request body (Go template) | — |
-| `PASSWORD_HOOK_HEADERS` | JSON object of extra headers (values are Go templates) | `{}` |
-| `PASSWORD_HOOK_TIMEOUT` | Request timeout in seconds | `10` |
-| `PASSWORD_HOOK_SKIP_TLS_VERIFY` | Skip TLS certificate verification | `false` |
+### Password change webhook
+
+Called after any successful password change (change, reset, signup). Fire-and-forget: failures are logged but don't affect the local password change.
+
+```toml
+[password_hook]
+enabled = true
+url = "https://your-server.com:2222/CMD_API_EMAIL_PW"
+method = "POST"
+content_type = "application/x-www-form-urlencoded"
+body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
+timeout = 10
+
+[password_hook.headers]
+Authorization = "Basic base64-encoded-credentials"
+```
 
 **Template variables:** `{{.Email}}` (full email), `{{.User}}` (part before @), `{{.Domain}}` (part after @), `{{.Password}}` (new plaintext password).
 
-### Example: DirectAdmin email password sync
+### SMS webhook
 
-```yaml
-PASSWORD_HOOK_ENABLED: "true"
-PASSWORD_HOOK_URL: "https://your-server.com:2222/CMD_API_EMAIL_PW"
-PASSWORD_HOOK_BODY: "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
-PASSWORD_HOOK_HEADERS: '{"Authorization":"Basic base64-encoded-credentials"}'
+Used for sending SMS messages (e.g. password reset codes). If configured in `config.toml`, it takes precedence over `SMS_WEBHOOK_*` env vars.
+
+```toml
+[sms]
+enabled = true
+url = "https://gw.cmtelecom.com/v1.0/message"
+method = "POST"
+content_type = "application/json"
+body = '{"messages":{"authentication":{"producttoken":"xxx"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}'
 ```
 
-## SMS via CM.com
-
-The existing webhook SMS provider can be configured to use CM.com's Messages API — no code changes needed:
-
-```yaml
-SMS_ENABLED: "true"
-SMS_WEBHOOK_URL: "https://gw.cmtelecom.com/v1.0/message"
-SMS_WEBHOOK_CONTENT_TYPE: "application/json"
-SMS_WEBHOOK_BODY: '{"messages":{"authentication":{"producttoken":"YOUR_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}'
-```
+**Template variables:** `{{.To}}` (phone number), `{{.Message}}` (SMS text).
 
 ## API overview
 
