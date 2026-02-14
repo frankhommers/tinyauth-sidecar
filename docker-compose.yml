@@ -23,6 +23,20 @@ services:
       SIGNUP_REQUIRE_APPROVAL: "false"
       SESSION_SECRET: changeme
       CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      # --- Password change webhook (e.g. DirectAdmin email sync) ---
+      # PASSWORD_HOOK_ENABLED: "true"
+      # PASSWORD_HOOK_URL: "https://your-server.com:2222/CMD_API_EMAIL_PW"
+      # PASSWORD_HOOK_METHOD: "POST"
+      # PASSWORD_HOOK_CONTENT_TYPE: "application/x-www-form-urlencoded"
+      # PASSWORD_HOOK_BODY: "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
+      # PASSWORD_HOOK_HEADERS: '{"Authorization":"Basic base64-encoded-credentials"}'
+      # PASSWORD_HOOK_TIMEOUT: "10"
+      # --- SMS via CM.com (using generic webhook provider) ---
+      # SMS_ENABLED: "true"
+      # SMS_WEBHOOK_URL: "https://gw.cmtelecom.com/v1.0/message"
+      # SMS_WEBHOOK_METHOD: "POST"
+      # SMS_WEBHOOK_CONTENT_TYPE: "application/json"
+      # SMS_WEBHOOK_BODY: '{"messages":{"authentication":{"producttoken":"YOUR_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}'
     volumes:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock

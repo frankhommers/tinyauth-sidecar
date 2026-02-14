@@ -45,6 +45,45 @@ sudo docker compose up --build
 - `DOCKER_SOCKET_PATH` (default `/var/run/docker.sock`)
 - `SMTP_*` vars for mail
 
+## Password change webhook
+
+Optionally call a webhook after any successful password change (change, reset, signup). Useful for syncing passwords to external systems like DirectAdmin email hosting.
+
+The webhook is fire-and-forget: if it fails, a warning is logged but the local password change still succeeds.
+
+| Variable | Description | Default |
+|---|---|---|
+| `PASSWORD_HOOK_ENABLED` | Enable the webhook (`true`/`false`) | `false` |
+| `PASSWORD_HOOK_URL` | Webhook URL (Go template, supports `{{.Email}}`, `{{.User}}`, `{{.Domain}}`, `{{.Password}}`) | — |
+| `PASSWORD_HOOK_METHOD` | HTTP method | `POST` |
+| `PASSWORD_HOOK_CONTENT_TYPE` | Content-Type header | `application/x-www-form-urlencoded` |
+| `PASSWORD_HOOK_BODY` | Request body (Go template) | — |
+| `PASSWORD_HOOK_HEADERS` | JSON object of extra headers (values are Go templates) | `{}` |
+| `PASSWORD_HOOK_TIMEOUT` | Request timeout in seconds | `10` |
+| `PASSWORD_HOOK_SKIP_TLS_VERIFY` | Skip TLS certificate verification | `false` |
+
+**Template variables:** `{{.Email}}` (full email), `{{.User}}` (part before @), `{{.Domain}}` (part after @), `{{.Password}}` (new plaintext password).
+
+### Example: DirectAdmin email password sync
+
+```yaml
+PASSWORD_HOOK_ENABLED: "true"
+PASSWORD_HOOK_URL: "https://your-server.com:2222/CMD_API_EMAIL_PW"
+PASSWORD_HOOK_BODY: "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
+PASSWORD_HOOK_HEADERS: '{"Authorization":"Basic base64-encoded-credentials"}'
+```
+
+## SMS via CM.com
+
+The existing webhook SMS provider can be configured to use CM.com's Messages API — no code changes needed:
+
+```yaml
+SMS_ENABLED: "true"
+SMS_WEBHOOK_URL: "https://gw.cmtelecom.com/v1.0/message"
+SMS_WEBHOOK_CONTENT_TYPE: "application/json"
+SMS_WEBHOOK_BODY: '{"messages":{"authentication":{"producttoken":"YOUR_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}'
+```
+
 ## API overview
 
 Public:
