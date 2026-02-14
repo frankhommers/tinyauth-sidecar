@@ -1,34 +1,43 @@
 # TinyAuth User Management - Webhook Configuration
 # Copy this file to /data/config.toml (or set CONFIG_PATH env var)
 
-# Password change webhook
+# Password change webhooks (array — you can define multiple!)
 # Called after any successful password change (change, reset, signup).
-# Useful for syncing passwords to external systems like DirectAdmin.
-#
 # Template variables: {{.Email}}, {{.User}} (before @), {{.Domain}} (after @), {{.Password}}
-[password_hook]
+
+# Example 1: DirectAdmin (Vimexx) email password sync
+[[password_hooks]]
 enabled = false
 url = "https://your-server.com:2222/CMD_API_EMAIL_PW"
-method = "POST"                                          # default: POST
-content_type = "application/x-www-form-urlencoded"       # default
+method = "POST"
+content_type = "application/x-www-form-urlencoded"
 body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
-timeout = 10                                             # seconds, default: 10
-# skip_tls_verify = false
+timeout = 10
 
-[password_hook.headers]
+[password_hooks.headers]
 Authorization = "Basic base64-encoded-credentials"
 
+# Example 2: Notify an external system via webhook
+# [[password_hooks]]
+# enabled = false
+# url = "https://hooks.example.com/password-changed"
+# method = "POST"
+# content_type = "application/json"
+# body = '{"email":"{{.Email}}","event":"password_changed"}'
+# timeout = 5
+
 # SMS webhook
-# Used for sending SMS messages (e.g. password reset codes).
+# Used for sending SMS password reset codes.
 # If not configured here, falls back to SMS_WEBHOOK_* env vars.
-#
 # Template variables: {{.To}} (phone number), {{.Message}}
+
+# Example: CM.com Messages API
 [sms]
 enabled = false
 url = "https://gw.cmtelecom.com/v1.0/message"
-method = "POST"                                          # default: POST
-content_type = "application/json"                        # default
+method = "POST"
+content_type = "application/json"
 body = '''
-{"messages":{"authentication":{"producttoken":"YOUR_PRODUCT_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}
+{"messages":{"authentication":{"producttoken":"YOUR_CM_PRODUCT_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}
 '''
-timeout = 15                                             # seconds, default: 15
+timeout = 15

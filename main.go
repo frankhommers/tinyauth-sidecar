@@ -33,7 +33,12 @@ func main() {
 	// Initialize providers
 	fileCfg := config.LoadFileConfig()
 	passwordTargets := provider.NewPasswordTargetProvider()
-	passwordHook := provider.NewWebhookPasswordHook(fileCfg.PasswordHook)
+	var passwordHooks []provider.PasswordChangeHook
+	for _, hookCfg := range fileCfg.PasswordHooks {
+		if h := provider.NewWebhookPasswordHook(hookCfg); h != nil {
+			passwordHooks = append(passwordHooks, h)
+		}
+	}
 
 	// SMS: config.toml takes precedence, fall back to env vars
 	smsProvider := provider.NewWebhookSMSProviderFromConfig(fileCfg.SMS)
@@ -45,7 +50,7 @@ func main() {
 	mailSvc := service.NewMailService(cfg)
 	dockerSvc := service.NewDockerService(cfg)
 	authSvc := service.NewAuthService(cfg, st, usersSvc)
-	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHook)
+	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHooks...)
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{

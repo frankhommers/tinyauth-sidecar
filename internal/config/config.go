@@ -99,8 +99,8 @@ type WebhookConfig struct {
 
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
-	PasswordHook WebhookConfig `toml:"password_hook"`
-	SMS          WebhookConfig `toml:"sms"`
+	PasswordHooks []WebhookConfig `toml:"password_hooks"`
+	SMS           WebhookConfig   `toml:"sms"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
@@ -119,7 +119,9 @@ func LoadFileConfig() FileConfig {
 	}
 
 	// Apply defaults
-	applyWebhookDefaults(&fc.PasswordHook, "POST", "application/x-www-form-urlencoded", 10)
+	for i := range fc.PasswordHooks {
+		applyWebhookDefaults(&fc.PasswordHooks[i], "POST", "application/x-www-form-urlencoded", 10)
+	}
 	applyWebhookDefaults(&fc.SMS, "POST", "application/json", 15)
 
 	log.Printf("[config] loaded %s", path)
