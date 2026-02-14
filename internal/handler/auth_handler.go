@@ -45,5 +45,6 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	token, _ := c.Cookie(h.cfg.SessionCookieName)
 	_ = h.auth.Logout(token)
 	c.SetCookie(h.cfg.SessionCookieName, "", -1, "/", "", h.cfg.SecureCookie, true)
+	c.SetCookie(h.cfg.SessionCookieName, "", -1, "/manage", "", h.cfg.SecureCookie, true)
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
