@@ -15,7 +15,6 @@ import (
 	"tinyauth-usermanagement/internal/store"
 
 	"github.com/google/uuid"
-	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -346,10 +345,6 @@ func (s *AccountService) TotpRecover(username, recoveryKey, newSecret, code stri
 		return errors.New("invalid recovery key")
 	}
 	return s.TotpEnable(username, newSecret, code)
-}
-
-func (s *AccountService) ValidateToken(token string) (*otp.Key, error) {
-	return otp.NewKeyFromURL(token)
 }
 
 // generateNumericCode generates a cryptographically random numeric code of the given length.

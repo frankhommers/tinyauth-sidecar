@@ -3,9 +3,7 @@
     "name": "tinyauth gebruikersbeheer"
   },
   "nav": {
-    "login": "Inloggen",
     "logout": "Uitloggen",
-    "signup": "Registreren",
     "reset": "Herstel",
     "account": "Account"
   },
@@ -17,7 +15,6 @@
   },
   "common": {
     "username": "Gebruikersnaam",
-    "email": "E-mailadres",
     "password": "Wachtwoord",
     "newPassword": "Nieuw wachtwoord",
     "save": "Opslaan",
@@ -26,27 +23,9 @@
     "code": "Code",
     "token": "Token",
     "phone": "Telefoon",
-    "phoneOptional": "Telefoon (optioneel)",
     "phoneNumber": "Telefoonnummer",
     "loading": "Laden...",
     "copied": "Gekopieerd!"
-  },
-  "loginPage": {
-    "title": "tinyauth",
-    "description": "Log in op je account",
-    "submit": "Inloggen",
-    "createAccount": "Account aanmaken",
-    "forgotPassword": "Wachtwoord vergeten?",
-    "success": "Ingelogd",
-    "error": "Inloggen mislukt"
-  },
-  "signupPage": {
-    "title": "Registreren",
-    "description": "Maak een lokaal account aan",
-    "submit": "Account aanmaken",
-    "status": "Status registratie: {{status}}",
-    "error": "Registreren mislukt",
-    "phoneHelp": "Voor wachtwoordherstel via sms"
   },
   "resetPage": {
     "title": "Wachtwoord herstellen",

@@ -23,15 +23,16 @@ services:
       traefik.http.middlewares.tinyauth.forwardauth.address: http://tinyauth:3000/api/auth/traefik
 
   usermanagement:
-    image: ghcr.io/frankhommers/tinyauth-usermanagement:latest
+    image: git.initialize.nl/aivy/tinyauth-usermanagement:latest
     container_name: tinyauth-usermanagement
     restart: unless-stopped
     environment:
       PORT: "8080"
       USERS_FILE_PATH: /users/users.txt
       USERS_TOML: /users/users.toml
+      # Single config point — derives verify + logout URLs automatically
+      TINYAUTH_BASEURL: "http://tinyauth:3000"
       TINYAUTH_CONTAINER_NAME: tinyauth
-      TINYAUTH_VERIFY_URL: http://tinyauth:3000/api/auth/traefik
       DISABLE_SIGNUP: "true"
     volumes:
       - ./users:/users
@@ -45,7 +46,6 @@ services:
       traefik.http.routers.usermanagement.entrypoints: websecure
       traefik.http.routers.usermanagement.tls.certresolver: letsencrypt
       traefik.http.services.usermanagement.loadbalancer.server.port: "8080"
-      # No tinyauth forwardauth middleware — usermanagement handles its own auth
     depends_on:
       - tinyauth
 
