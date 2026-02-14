@@ -1,9 +1,12 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
@@ -80,6 +83,59 @@ func getEnvBool(key string, fallback bool) bool {
 		return strings.EqualFold(v, "1") || strings.EqualFold(v, "true") || strings.EqualFold(v, "yes")
 	}
 	return fallback
+}
+
+// WebhookConfig holds configuration for a generic webhook (password hook or SMS).
+type WebhookConfig struct {
+	Enabled       bool              `toml:"enabled"`
+	URL           string            `toml:"url"`
+	Method        string            `toml:"method"`
+	ContentType   string            `toml:"content_type"`
+	Body          string            `toml:"body"`
+	Headers       map[string]string `toml:"headers"`
+	Timeout       int               `toml:"timeout"`
+	SkipTLSVerify bool              `toml:"skip_tls_verify"`
+}
+
+// FileConfig represents the TOML config file structure.
+type FileConfig struct {
+	PasswordHook WebhookConfig `toml:"password_hook"`
+	SMS          WebhookConfig `toml:"sms"`
+}
+
+// LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
+// Returns an empty config if the file doesn't exist.
+func LoadFileConfig() FileConfig {
+	path := getEnv("CONFIG_PATH", "/data/config.toml")
+
+	var fc FileConfig
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fc
+	}
+
+	if _, err := toml.DecodeFile(path, &fc); err != nil {
+		log.Printf("[config] failed to parse %s: %v", path, err)
+		return FileConfig{}
+	}
+
+	// Apply defaults
+	applyWebhookDefaults(&fc.PasswordHook, "POST", "application/x-www-form-urlencoded", 10)
+	applyWebhookDefaults(&fc.SMS, "POST", "application/json", 15)
+
+	log.Printf("[config] loaded %s", path)
+	return fc
+}
+
+func applyWebhookDefaults(wc *WebhookConfig, method, contentType string, timeout int) {
+	if wc.Method == "" {
+		wc.Method = method
+	}
+	if wc.ContentType == "" {
+		wc.ContentType = contentType
+	}
+	if wc.Timeout <= 0 {
+		wc.Timeout = timeout
+	}
 }
 
 func parseCSV(v string) []string {

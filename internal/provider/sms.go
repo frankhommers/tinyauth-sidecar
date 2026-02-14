@@ -11,6 +11,8 @@ import (
 	"os"
 	"text/template"
 	"time"
+
+	"tinyauth-usermanagement/internal/config"
 )
 
 // SMSProvider is the interface for sending SMS messages.
@@ -93,6 +95,29 @@ func NewWebhookSMSProvider() SMSProvider {
 			Headers:       headers,
 			Env:           env,
 			SkipTLSVerify: skipTLS,
+		},
+	}
+}
+
+// NewWebhookSMSProviderFromConfig creates a WebhookSMSProvider from a WebhookConfig (TOML).
+// Returns nil if not enabled.
+func NewWebhookSMSProviderFromConfig(cfg config.WebhookConfig) SMSProvider {
+	if !cfg.Enabled || cfg.URL == "" {
+		return nil
+	}
+	if cfg.Body == "" {
+		log.Printf("[sms] config enabled but body is empty")
+		return nil
+	}
+	log.Printf("[sms] webhook SMS provider configured from config.toml: %s %s", cfg.Method, cfg.URL)
+	return &WebhookSMSProvider{
+		config: WebhookSMSConfig{
+			URL:           cfg.URL,
+			Method:        cfg.Method,
+			ContentType:   cfg.ContentType,
+			Body:          cfg.Body,
+			Headers:       cfg.Headers,
+			SkipTLSVerify: cfg.SkipTLSVerify,
 		},
 	}
 }

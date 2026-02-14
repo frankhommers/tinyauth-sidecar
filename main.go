@@ -31,9 +31,15 @@ func main() {
 	defer st.Close()
 
 	// Initialize providers
+	fileCfg := config.LoadFileConfig()
 	passwordTargets := provider.NewPasswordTargetProvider()
-	passwordHook := provider.NewWebhookPasswordHook()
-	smsProvider := provider.NewWebhookSMSProvider()
+	passwordHook := provider.NewWebhookPasswordHook(fileCfg.PasswordHook)
+
+	// SMS: config.toml takes precedence, fall back to env vars
+	smsProvider := provider.NewWebhookSMSProviderFromConfig(fileCfg.SMS)
+	if smsProvider == nil {
+		smsProvider = provider.NewWebhookSMSProvider()
+	}
 
 	usersSvc := service.NewUserFileService(cfg)
 	mailSvc := service.NewMailService(cfg)
