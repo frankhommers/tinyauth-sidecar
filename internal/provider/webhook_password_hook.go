@@ -29,6 +29,9 @@ func NewWebhookPasswordHook(cfg config.WebhookConfig) PasswordChangeHook {
 		log.Printf("[password-hook] enabled but body is empty")
 		return nil
 	}
+	if strings.HasPrefix(cfg.URL, "http://") {
+		log.Printf("[password-hook] WARNING: hook URL uses plain HTTP (not HTTPS): %s — passwords will be sent unencrypted!", cfg.URL)
+	}
 	log.Printf("[password-hook] webhook configured: %s %s (filters: domains=%v roles=%v emails=%v)",
 		cfg.Method, cfg.URL, cfg.FilterDomains, cfg.FilterRoles, cfg.FilterUsers)
 	return &WebhookPasswordHook{cfg: cfg}

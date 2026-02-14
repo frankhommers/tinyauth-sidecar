@@ -4,7 +4,6 @@ Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4).
 
 ## Features
 
-- **No separate session** — authenticates every request via tinyauth's forwardauth endpoint
 - Password reset via email or SMS
 - Two-step verification (TOTP) setup/enable/disable with copyable OTP URL
 - Account profile + password change + phone number
@@ -15,6 +14,14 @@ Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4).
 - React + Tailwind + shadcn/ui SPA embedded in Go binary
 - Serves under `/manage` base path (Traefik PathPrefix routing)
 - i18n: English + Nederlands
+
+## Security
+
+- **No separate session** — every authenticated request is validated via tinyauth's forwardauth endpoint
+- **Rate limiting** — public endpoints (password reset, SMS) are rate-limited per IP
+- **CSRF protection** — double-submit cookie pattern on all state-changing API requests
+- **Security headers** — X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy
+- **TLS warnings** — logs warnings if password hook URLs use plain HTTP
 
 ## Architecture
 
