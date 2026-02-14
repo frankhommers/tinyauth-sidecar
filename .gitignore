@@ -5,4 +5,3 @@ frontend/dist/
 *.db-wal
 data/
 .env
-examples/docker-compose.yml

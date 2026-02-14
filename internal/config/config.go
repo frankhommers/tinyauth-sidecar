@@ -27,7 +27,6 @@ type Config struct {
 	TinyauthLogoutURL       string
 	TinyauthContainerName   string
 	DockerSocketPath        string
-	SecureCookie            bool
 	CORSOrigins             []string
 }
 
@@ -52,7 +51,6 @@ func Load() Config {
 		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", baseURL+"/api/auth/logout"),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
-		SecureCookie:          getEnvBool("SECURE_COOKIE", false),
 		CORSOrigins:           parseCSV(getEnv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080")),
 	}
 

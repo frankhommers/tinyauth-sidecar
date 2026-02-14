@@ -1,6 +1,6 @@
 # tinyauth-usermanagement
 
-Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4). Manages users in the shared plain text users file.
+Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4). Manages users in the shared plain-text users file.
 
 ## Features
 
@@ -44,14 +44,19 @@ sudo docker compose up -d
 | `PORT` | `8080` | Server port |
 | `USERS_FILE_PATH` | `/data/users.txt` | Path to shared tinyauth users file |
 | `USERS_TOML` | `/users/users.toml` | User metadata (names, roles, phone) |
-| `TINYAUTH_VERIFY_URL` | — | Tinyauth forwardauth URL (required) |
+| `TINYAUTH_BASEURL` | `http://tinyauth:3000` | Tinyauth base URL (derives verify + logout URLs) |
+| `TINYAUTH_VERIFY_URL` | `{BASEURL}/api/auth/traefik` | Override: tinyauth forwardauth URL |
+| `TINYAUTH_LOGOUT_URL` | `{BASEURL}/api/auth/logout` | Override: tinyauth logout URL |
 | `TINYAUTH_CONTAINER_NAME` | `tinyauth` | Container to restart after user changes |
 | `DOCKER_SOCKET_PATH` | `/var/run/docker.sock` | Docker socket path |
-| `DISABLE_SIGNUP` | `false` | Disable signup (hides UI + blocks API) |
+| `DISABLE_SIGNUP` | `true` | Disable signup (hides UI + blocks API) |
+| `SIGNUP_REQUIRE_APPROVAL` | `false` | Require admin approval for signups |
 | `TOTP_ISSUER` | `tinyauth` | Issuer name in authenticator apps |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | — | Email for password resets |
 | `MAIL_BASE_URL` | `http://localhost:8080` | Base URL in reset emails |
+| `RESET_TOKEN_TTL_SECONDS` | `3600` | Password reset token validity |
 | `CONFIG_PATH` | `/data/config.toml` | Webhook config file path |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:8080` | Allowed CORS origins |
 
 ## Webhook configuration (`config.toml`)
 
@@ -98,12 +103,14 @@ All routes under `/manage/api/`.
 - `POST /password-reset/confirm` — confirm reset with token
 - `POST /auth/forgot-password-sms` — request reset via SMS
 - `POST /auth/reset-password-sms` — confirm SMS reset
+- `POST /signup` — create account (if enabled)
+- `POST /signup/approve` — approve pending signup
 - `GET  /features` — runtime feature flags
 - `GET  /health`
 
 **Authenticated (validated via tinyauth):**
 - `GET  /auth/check` — auth status
-- `POST /auth/logout` — logout
+- `POST /auth/logout` — get tinyauth logout URL
 - `GET  /account/profile`
 - `POST /account/change-password`
 - `POST /account/phone`

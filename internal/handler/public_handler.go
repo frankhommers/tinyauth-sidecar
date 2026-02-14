@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"tinyauth-usermanagement/internal/config"
@@ -28,7 +27,6 @@ func (h *PublicHandler) Register(r *gin.RouterGroup) {
 	r.GET("/features", h.Features)
 	r.POST("/auth/forgot-password-sms", h.ForgotPasswordSMS)
 	r.POST("/auth/reset-password-sms", h.ResetPasswordSMS)
-	_ = base64.StdEncoding
 }
 
 func (h *PublicHandler) RequestReset(c *gin.Context) {

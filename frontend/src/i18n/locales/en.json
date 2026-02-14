@@ -3,9 +3,7 @@
     "name": "tinyauth user management"
   },
   "nav": {
-    "login": "Login",
     "logout": "Logout",
-    "signup": "Sign up",
     "reset": "Reset",
     "account": "Account"
   },
@@ -17,7 +15,6 @@
   },
   "common": {
     "username": "Username",
-    "email": "Email",
     "password": "Password",
     "newPassword": "New password",
     "save": "Save",
@@ -26,27 +23,9 @@
     "code": "Code",
     "token": "Token",
     "phone": "Phone",
-    "phoneOptional": "Phone (optional)",
     "phoneNumber": "Phone number",
     "loading": "Loading...",
     "copied": "Copied!"
-  },
-  "loginPage": {
-    "title": "tinyauth",
-    "description": "Sign in to your account",
-    "submit": "Login",
-    "createAccount": "Create account",
-    "forgotPassword": "Forgot password?",
-    "success": "Logged in",
-    "error": "Login failed"
-  },
-  "signupPage": {
-    "title": "Sign up",
-    "description": "Create a local account",
-    "submit": "Create account",
-    "status": "Sign-up status: {{status}}",
-    "error": "Sign-up failed",
-    "phoneHelp": "For SMS password reset"
   },
   "resetPage": {
     "title": "Reset password",
