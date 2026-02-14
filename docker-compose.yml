@@ -1,32 +1,54 @@
-version: "3.9"
 services:
   tinyauth:
-    image: steveiliop56/tinyauth:latest
+    image: ghcr.io/steveiliop56/tinyauth:v4
     container_name: tinyauth
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      TINYAUTH_APPURL: "https://auth.example.com"
+      TINYAUTH_AUTH_USERSFILE: /users/users.txt
+      TINYAUTH_DISABLEANALYTICS: "true"
+      TINYAUTH_AUTH_SECURECOOKIE: "true"
+      TINYAUTH_UI_FORGOTPASSWORDMESSAGE: '<a href="https://auth.example.com/manage/reset-password">Forgot your password?</a>'
     volumes:
-      - ./data/users.txt:/data/users.txt
+      - ./users:/users
+      - ./data:/data
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.tinyauth.rule: Host(`auth.example.com`)
+      traefik.http.routers.tinyauth.entrypoints: websecure
+      traefik.http.routers.tinyauth.tls.certresolver: letsencrypt
+      traefik.http.services.tinyauth.loadbalancer.server.port: "3000"
+      traefik.http.middlewares.tinyauth.forwardauth.address: http://tinyauth:3000/api/auth/traefik
 
-  tinyauth-usermanagement:
-    build: .
+  usermanagement:
+    image: ghcr.io/frankhommers/tinyauth-usermanagement:latest
     container_name: tinyauth-usermanagement
-    ports:
-      - "8080:8080"
+    restart: unless-stopped
     environment:
       PORT: "8080"
-      USERS_FILE_PATH: /data/users.txt
-      USERS_TOML: /data/users.toml
+      USERS_FILE_PATH: /users/users.txt
+      USERS_TOML: /users/users.toml
       TINYAUTH_CONTAINER_NAME: tinyauth
-      DOCKER_SOCKET_PATH: /var/run/docker.sock
-      MAIL_BASE_URL: http://localhost:8080
-      SIGNUP_REQUIRE_APPROVAL: "false"
-      SESSION_SECRET: changeme
-      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
-      # CONFIG_PATH: /data/config.toml  # default
+      TINYAUTH_VERIFY_URL: http://tinyauth:3000/api/auth/traefik
+      DISABLE_SIGNUP: "true"
     volumes:
-      - ./data:/data
-      - ./config.toml:/data/config.toml  # webhook config (see config.example.toml)
+      - ./users:/users
+      - ./config.toml:/data/config.toml
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.usermanagement.rule: Host(`auth.example.com`) && PathPrefix(`/manage`)
+      traefik.http.routers.usermanagement.entrypoints: websecure
+      traefik.http.routers.usermanagement.tls.certresolver: letsencrypt
+      traefik.http.services.usermanagement.loadbalancer.server.port: "8080"
+      # No tinyauth forwardauth middleware — usermanagement handles its own auth
     depends_on:
       - tinyauth
+
+networks:
+  traefik:
+    external: true
