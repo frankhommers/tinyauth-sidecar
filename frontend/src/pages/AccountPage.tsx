@@ -6,11 +6,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Copy, Check } from 'lucide-react'
 
 type Profile = {
   username: string
   totpEnabled: boolean
   phone?: string
+}
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-6 w-6 shrink-0"
+      onClick={async () => {
+        await navigator.clipboard.writeText(value)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+    </Button>
+  )
 }
 
 export default function AccountPage() {
@@ -23,6 +42,7 @@ export default function AccountPage() {
   const [totpSecret, setTotpSecret] = useState('')
   const [totpCode, setTotpCode] = useState('')
   const [qrPng, setQrPng] = useState('')
+  const [otpUrl, setOtpUrl] = useState('')
   const [disablePassword, setDisablePassword] = useState('')
 
   const load = async () => {
@@ -122,6 +142,7 @@ export default function AccountPage() {
             const data = (await api.post('/account/totp/setup')).data
             setTotpSecret(data.secret)
             setQrPng(data.qrPng)
+            setOtpUrl(data.otpUrl)
           }}
         >
           {t('accountPage.generateSecret')}
@@ -130,9 +151,17 @@ export default function AccountPage() {
         {qrPng && <img src={qrPng} width={220} className="self-center max-w-full rounded-md border" alt={t('accountPage.totpQrAlt')} />}
 
         {totpSecret && (
-          <p className="rounded-md border bg-background/45 p-2 text-xs break-all">
-            {t('accountPage.secret')}: {totpSecret}
-          </p>
+          <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs break-all">
+            <span className="flex-1">{t('accountPage.secret')}: {totpSecret}</span>
+            <CopyButton value={totpSecret} />
+          </div>
+        )}
+
+        {otpUrl && (
+          <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs">
+            <span className="flex-1 truncate">{otpUrl}</span>
+            <CopyButton value={otpUrl} />
+          </div>
         )}
 
         <div className="flex flex-wrap gap-2">
@@ -153,7 +182,7 @@ export default function AccountPage() {
               }
             }}
           >
-            {t('common.enable')}
+            {t('accountPage.enableTotp')}
           </Button>
         </div>
 
@@ -177,7 +206,7 @@ export default function AccountPage() {
               }
             }}
           >
-            {t('common.disable')}
+            {t('accountPage.disableTotp')}
           </Button>
         </div>
       </CardContent>

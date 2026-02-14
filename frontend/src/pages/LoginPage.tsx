@@ -1,20 +1,30 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-
-const signupEnabled = import.meta.env.VITE_ENABLE_SIGNUP !== 'false'
+import { useFeatures } from '@/context/FeaturesContext'
 
 export default function LoginPage() {
   const { t } = useTranslation()
+  const { signupEnabled } = useFeatures()
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Auto-login via tinyauth SSO
+  useEffect(() => {
+    api.get('/auth/sso').then((res) => {
+      if (res.data.authenticated) {
+        navigate('/account')
+      }
+    }).catch(() => {})
+  }, [navigate])
 
   const submit = async () => {
     setLoading(true)

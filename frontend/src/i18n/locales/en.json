@@ -4,6 +4,7 @@
   },
   "nav": {
     "login": "Login",
+    "logout": "Logout",
     "signup": "Sign up",
     "reset": "Reset",
     "account": "Account"
@@ -27,7 +28,8 @@
     "phone": "Phone",
     "phoneOptional": "Phone (optional)",
     "phoneNumber": "Phone number",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "copied": "Copied!"
   },
   "loginPage": {
     "title": "tinyauth",
@@ -65,21 +67,23 @@
   },
   "accountPage": {
     "title": "Account",
-    "description": "Manage profile, password, and TOTP",
+    "description": "Manage profile, password, and two-step verification",
     "notLoggedIn": "Not logged in",
     "profile": "Profile",
-    "totpEnabled": "TOTP enabled",
+    "totpEnabled": "Two-step verification enabled",
     "changePassword": "Change password",
     "currentPassword": "Current password",
     "passwordChanged": "Password changed",
     "genericError": "Something went wrong",
     "phoneUpdated": "Phone number updated",
-    "totpSetup": "TOTP setup",
+    "totpSetup": "Set up verification app (Google Authenticator, Authy, etc.)",
     "generateSecret": "Generate secret",
     "secret": "Secret",
-    "totpEnabledSuccess": "TOTP enabled",
-    "totpDisabledSuccess": "TOTP disabled",
+    "totpEnabledSuccess": "Two-step verification enabled",
+    "totpDisabledSuccess": "Two-step verification disabled",
+    "enableTotp": "Enable two-step verification",
+    "disableTotp": "Disable two-step verification",
     "recoveryCodes": "Recovery codes",
-    "totpQrAlt": "TOTP QR code"
+    "totpQrAlt": "QR code for verification app"
   }
 }

@@ -4,6 +4,7 @@
   },
   "nav": {
     "login": "Inloggen",
+    "logout": "Uitloggen",
     "signup": "Registreren",
     "reset": "Herstel",
     "account": "Account"
@@ -27,7 +28,8 @@
     "phone": "Telefoon",
     "phoneOptional": "Telefoon (optioneel)",
     "phoneNumber": "Telefoonnummer",
-    "loading": "Laden..."
+    "loading": "Laden...",
+    "copied": "Gekopieerd!"
   },
   "loginPage": {
     "title": "tinyauth",
@@ -65,21 +67,23 @@
   },
   "accountPage": {
     "title": "Account",
-    "description": "Beheer je profiel, wachtwoord en TOTP",
+    "description": "Beheer je profiel, wachtwoord en tweestapsverificatie",
     "notLoggedIn": "Niet ingelogd",
     "profile": "Profiel",
-    "totpEnabled": "TOTP ingeschakeld",
+    "totpEnabled": "Tweestapsverificatie ingeschakeld",
     "changePassword": "Wachtwoord wijzigen",
     "currentPassword": "Huidig wachtwoord",
     "passwordChanged": "Wachtwoord gewijzigd",
     "genericError": "Er ging iets mis",
     "phoneUpdated": "Telefoonnummer bijgewerkt",
-    "totpSetup": "TOTP instellen",
+    "totpSetup": "Verificatie-app instellen (Google Authenticator, Authy, etc.)",
     "generateSecret": "Geheim genereren",
     "secret": "Geheim",
-    "totpEnabledSuccess": "TOTP ingeschakeld",
-    "totpDisabledSuccess": "TOTP uitgeschakeld",
+    "totpEnabledSuccess": "Tweestapsverificatie ingeschakeld",
+    "totpDisabledSuccess": "Tweestapsverificatie uitgeschakeld",
+    "enableTotp": "Tweestapsverificatie inschakelen",
+    "disableTotp": "Tweestapsverificatie uitschakelen",
     "recoveryCodes": "Herstelcodes",
-    "totpQrAlt": "TOTP QR-code"
+    "totpQrAlt": "QR-code voor verificatie-app"
   }
 }

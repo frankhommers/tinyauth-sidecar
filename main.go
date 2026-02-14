@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 
 	"tinyauth-usermanagement/internal/config"
 	"tinyauth-usermanagement/internal/handler"
@@ -60,12 +61,14 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	api := r.Group("/api")
+	api := r.Group("/manage/api")
 	{
+		api.GET("/auth/sso", middleware.TinyauthSSO(cfg, st))
+
 		authHandler := handler.NewAuthHandler(cfg, authSvc)
 		authHandler.Register(api)
 
-		public := handler.NewPublicHandler(accountSvc)
+		public := handler.NewPublicHandler(accountSvc, cfg)
 		public.Register(api)
 
 		authed := api.Group("")
@@ -83,12 +86,16 @@ func main() {
 }
 
 type spaHandler struct {
-	fs fs.FS
+	fs       fs.FS
+	basePath string
 }
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	if path == "/" {
+	if h.basePath != "" && strings.HasPrefix(path, h.basePath) {
+		path = strings.TrimPrefix(path, h.basePath)
+	}
+	if path == "" || path == "/" {
 		path = "index.html"
 	} else if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
@@ -129,5 +136,6 @@ func serveSPA(r *gin.Engine) {
 		return
 	}
 
-	r.NoRoute(gin.WrapH(spaHandler{fs: distFS}))
+	spa := spaHandler{fs: distFS, basePath: "/manage"}
+	r.NoRoute(gin.WrapH(spa))
 }

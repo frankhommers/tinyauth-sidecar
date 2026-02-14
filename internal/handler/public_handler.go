@@ -4,14 +4,20 @@ import (
 	"encoding/base64"
 	"net/http"
 
+	"tinyauth-usermanagement/internal/config"
 	"tinyauth-usermanagement/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-type PublicHandler struct{ account *service.AccountService }
+type PublicHandler struct {
+	account *service.AccountService
+	cfg     config.Config
+}
 
-func NewPublicHandler(account *service.AccountService) *PublicHandler { return &PublicHandler{account: account} }
+func NewPublicHandler(account *service.AccountService, cfg config.Config) *PublicHandler {
+	return &PublicHandler{account: account, cfg: cfg}
+}
 
 func (h *PublicHandler) Register(r *gin.RouterGroup) {
 	r.POST("/password-reset/request", h.RequestReset)
@@ -52,6 +58,10 @@ func (h *PublicHandler) ConfirmReset(c *gin.Context) {
 }
 
 func (h *PublicHandler) Signup(c *gin.Context) {
+	if h.cfg.DisableSignup {
+		c.JSON(http.StatusForbidden, gin.H{"error": "signups are disabled"})
+		return
+	}
 	var req struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -85,7 +95,8 @@ func (h *PublicHandler) ApproveSignup(c *gin.Context) {
 
 func (h *PublicHandler) Features(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"smsEnabled": h.account.SMSEnabled(),
+		"smsEnabled":    h.account.SMSEnabled(),
+		"signupEnabled": !h.cfg.DisableSignup,
 	})
 }
 
