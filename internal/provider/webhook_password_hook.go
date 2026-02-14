@@ -70,12 +70,12 @@ func (h *WebhookPasswordHook) OnPasswordChanged(email, newPassword string) error
 	}
 	req.Header.Set("Content-Type", h.cfg.ContentType)
 
-	for k, v := range h.cfg.Headers {
-		headerVal, err := execTmpl("header-"+k, v, data)
+	for _, hdr := range h.cfg.Headers {
+		headerVal, err := execTmpl("header-"+hdr.Key, hdr.Value, data)
 		if err != nil {
-			return fmt.Errorf("template header %s: %w", k, err)
+			return fmt.Errorf("template header %s: %w", hdr.Key, err)
 		}
-		req.Header.Set(k, headerVal)
+		req.Header.Set(hdr.Key, headerVal)
 	}
 
 	client := &http.Client{Timeout: time.Duration(h.cfg.Timeout) * time.Second}

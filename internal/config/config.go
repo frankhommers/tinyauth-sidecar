@@ -85,6 +85,12 @@ func getEnvBool(key string, fallback bool) bool {
 	return fallback
 }
 
+// HeaderEntry is a key-value pair for HTTP headers.
+type HeaderEntry struct {
+	Key   string `toml:"key"`
+	Value string `toml:"value"`
+}
+
 // WebhookConfig holds configuration for a generic webhook (password hook or SMS).
 type WebhookConfig struct {
 	Enabled       bool              `toml:"enabled"`
@@ -92,7 +98,7 @@ type WebhookConfig struct {
 	Method        string            `toml:"method"`
 	ContentType   string            `toml:"content_type"`
 	Body          string            `toml:"body"`
-	Headers       map[string]string `toml:"headers"`
+	Headers       []HeaderEntry     `toml:"headers"`
 	Timeout       int               `toml:"timeout"`
 	SkipTLSVerify bool              `toml:"skip_tls_verify"`
 }

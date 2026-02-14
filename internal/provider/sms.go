@@ -116,7 +116,7 @@ func NewWebhookSMSProviderFromConfig(cfg config.WebhookConfig) SMSProvider {
 			Method:        cfg.Method,
 			ContentType:   cfg.ContentType,
 			Body:          cfg.Body,
-			Headers:       cfg.Headers,
+			Headers:       headerEntriesToMap(cfg.Headers),
 			SkipTLSVerify: cfg.SkipTLSVerify,
 		},
 	}
@@ -186,4 +186,15 @@ func executeSMSTemplate(name, tmplStr string, data map[string]string) (string, e
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func headerEntriesToMap(entries []config.HeaderEntry) map[string]string {
+	if len(entries) == 0 {
+		return nil
+	}
+	m := make(map[string]string, len(entries))
+	for _, e := range entries {
+		m[e.Key] = e.Value
+	}
+	return m
 }
