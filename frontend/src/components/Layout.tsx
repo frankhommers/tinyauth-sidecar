@@ -41,17 +41,15 @@ export function Layout({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
-  const navItems: NavItem[] = [
-    ...(loggedIn
-      ? [
-          { label: t('nav.account'), path: '/account' },
-          { label: t('nav.logout'), onClick: handleLogout },
-        ]
-      : [
-          { label: t('nav.login'), href: '/' },
-        ]),
-    { label: t('nav.reset'), path: '/reset-password' },
-  ]
+  const navItems: NavItem[] = loggedIn
+    ? [
+        { label: t('nav.account'), path: '/account' },
+        { label: t('nav.logout'), onClick: handleLogout },
+      ]
+    : [
+        { label: t('nav.login'), href: '/' },
+        { label: t('nav.forgotPassword'), path: '/reset-password' },
+      ]
 
   return (
     <div

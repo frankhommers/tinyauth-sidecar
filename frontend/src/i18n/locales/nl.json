@@ -3,8 +3,9 @@
     "name": "tinyauth gebruikersbeheer"
   },
   "nav": {
+    "login": "Inloggen",
     "logout": "Uitloggen",
-    "reset": "Herstel",
+    "forgotPassword": "Wachtwoord vergeten",
     "account": "Account"
   },
   "theme": {
@@ -28,17 +29,17 @@
     "copied": "Gekopieerd!"
   },
   "resetPage": {
-    "title": "Wachtwoord herstellen",
-    "description": "Herstel via token of sms-code",
+    "title": "Wachtwoord vergeten",
+    "description": "Stel een nieuw wachtwoord in via e-mail of sms",
     "tabEmail": "E-mail",
     "tabSms": "SMS",
     "usernameOrEmail": "Gebruikersnaam of e-mailadres",
-    "requestReset": "Herstellink versturen",
-    "requestResetSuccess": "Als de gebruiker bestaat, is er een herstelmail gestuurd (of gelogd).",
-    "resetPassword": "Wachtwoord herstellen",
+    "requestReset": "Nieuw wachtwoord aanvragen",
+    "requestResetSuccess": "Als het account bestaat, is er een e-mail verstuurd met verdere instructies.",
+    "resetPassword": "Wachtwoord instellen",
     "resetSuccess": "Wachtwoord gewijzigd",
     "resetError": "Herstellen mislukt",
-    "sendResetCode": "Herstelcode versturen",
+    "sendResetCode": "Code versturen via sms",
     "smsCode": "Sms-code",
     "resendCode": "Code opnieuw sturen",
     "smsSent": "Code verstuurd als het nummer bekend is",

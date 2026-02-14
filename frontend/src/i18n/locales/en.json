@@ -3,8 +3,9 @@
     "name": "tinyauth user management"
   },
   "nav": {
+    "login": "Login",
     "logout": "Logout",
-    "reset": "Reset",
+    "forgotPassword": "Forgot password",
     "account": "Account"
   },
   "theme": {
