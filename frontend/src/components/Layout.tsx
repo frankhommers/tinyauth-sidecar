@@ -5,29 +5,16 @@ import { LanguageSelector } from './language-toggle'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
-import { api } from '../api/client'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { loggedIn } = useAuth()
 
-  const handleLogout = async () => {
-    try {
-      const res = await api.post('/auth/logout')
-      const logoutUrl = res.data.redirectUrl
-      if (logoutUrl) {
-        // POST to tinyauth's logout endpoint to clear their session
-        await fetch(logoutUrl, { method: 'POST', credentials: 'include' }).catch(() => {})
-      }
-    } catch { /* ignore */ }
-    window.location.href = '/'
-  }
-
   const navItems = [
     ...(loggedIn
       ? [
           { label: t('nav.account'), path: '/account' },
-          { label: t('nav.logout'), path: '/', onClick: handleLogout },
+          { label: t('nav.logout'), href: '/api/auth/logout' },
         ]
       : []),
     { label: t('nav.reset'), path: '/reset-password' },
@@ -49,18 +36,18 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4">
           <nav className="hidden sm:flex items-center gap-1 rounded-md border bg-card/75 p-1 backdrop-blur-md">
             {navItems.map((item) =>
-              item.onClick ? (
-                <button
+              item.href ? (
+                <a
                   key={item.label}
-                  onClick={item.onClick}
+                  href={item.href}
                   className={cn('rounded-sm px-3 py-1.5 text-sm transition-colors hover:bg-accent cursor-pointer')}
                 >
                   {item.label}
-                </button>
+                </a>
               ) : (
                 <NavLink
                   key={item.path}
-                  to={item.path}
+                  to={item.path!}
                   className={({ isActive }) =>
                     cn(
                       'rounded-sm px-3 py-1.5 text-sm transition-colors',
@@ -77,18 +64,18 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-5xl px-4 sm:hidden">
           <nav className="flex items-center gap-1 rounded-md border bg-card/75 p-1 backdrop-blur-md">
             {navItems.map((item) =>
-              item.onClick ? (
-                <button
+              item.href ? (
+                <a
                   key={item.label}
-                  onClick={item.onClick}
+                  href={item.href}
                   className={cn('flex-1 rounded-sm px-2 py-1.5 text-center text-xs transition-colors hover:bg-accent cursor-pointer')}
                 >
                   {item.label}
-                </button>
+                </a>
               ) : (
                 <NavLink
                   key={item.path}
-                  to={item.path}
+                  to={item.path!}
                   className={({ isActive }) =>
                     cn(
                       'flex-1 rounded-sm px-2 py-1.5 text-center text-xs transition-colors',
