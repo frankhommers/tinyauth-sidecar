@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -52,6 +53,12 @@ func NewPasswordTargetProvider() *PasswordTargetProvider {
 		}
 		if targets[i].ContentType == "" {
 			targets[i].ContentType = "application/json"
+		}
+	}
+
+	for _, t := range targets {
+		if strings.HasPrefix(t.URL, "http://") {
+			log.Printf("[password-targets] WARNING: target %q uses plain HTTP (not HTTPS): %s — passwords will be sent unencrypted!", t.Name, t.URL)
 		}
 	}
 

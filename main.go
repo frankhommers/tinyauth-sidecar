@@ -53,18 +53,30 @@ func main() {
 	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHooks...)
 
 	r := gin.Default()
+
+	// Security headers on all responses
+	r.Use(middleware.SecurityHeaders())
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.CORSOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "X-CSRF-Token"},
 		AllowCredentials: true,
 	}))
 
+	// Rate limiters for sensitive public endpoints
+	resetEmailRL := middleware.PerMinute(3)
+	forgotSmsRL := middleware.PerMinute(3)
+	resetSmsRL := middleware.PerMinute(5)
+
 	api := r.Group("/manage/api")
 	{
+		// CSRF protection on all API endpoints (validates POST/PUT/DELETE)
+		api.Use(middleware.CSRFMiddleware())
+
 		// Public endpoints (no auth required)
 		public := handler.NewPublicHandler(accountSvc, cfg)
-		public.Register(api)
+		public.Register(api, resetEmailRL, forgotSmsRL, resetSmsRL)
 
 		// Auth check and logout (behind tinyauth middleware)
 		authed := api.Group("")

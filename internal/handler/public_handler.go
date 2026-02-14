@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"tinyauth-usermanagement/internal/config"
+	"tinyauth-usermanagement/internal/middleware"
 	"tinyauth-usermanagement/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -18,15 +19,19 @@ func NewPublicHandler(account *service.AccountService, cfg config.Config) *Publi
 	return &PublicHandler{account: account, cfg: cfg}
 }
 
-func (h *PublicHandler) Register(r *gin.RouterGroup) {
-	r.POST("/password-reset/request", h.RequestReset)
+func (h *PublicHandler) Register(r *gin.RouterGroup, resetEmailRL, forgotSmsRL, resetSmsRL *middleware.RateLimiter) {
+	r.POST("/password-reset/request", resetEmailRL.Middleware(), h.RequestReset)
 	r.POST("/password-reset/confirm", h.ConfirmReset)
 	r.POST("/signup", h.Signup)
 	r.POST("/signup/approve", h.ApproveSignup)
-	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
+	r.GET("/health", h.Health)
 	r.GET("/features", h.Features)
-	r.POST("/auth/forgot-password-sms", h.ForgotPasswordSMS)
-	r.POST("/auth/reset-password-sms", h.ResetPasswordSMS)
+	r.POST("/auth/forgot-password-sms", forgotSmsRL.Middleware(), h.ForgotPasswordSMS)
+	r.POST("/auth/reset-password-sms", resetSmsRL.Middleware(), h.ResetPasswordSMS)
+}
+
+func (h *PublicHandler) Health(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func (h *PublicHandler) RequestReset(c *gin.Context) {
@@ -111,7 +116,6 @@ func (h *PublicHandler) ForgotPasswordSMS(c *gin.Context) {
 		return
 	}
 	_ = h.account.RequestSMSReset(req.Phone)
-	// Always return OK to not leak whether phone exists
 	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "If a user is associated with this phone, a code was sent"})
 }
 
