@@ -103,7 +103,7 @@ type WebhookConfig struct {
 	SkipTLSVerify  bool          `toml:"skip_tls_verify"`
 	FilterDomains  []string      `toml:"filter_domains"`
 	FilterRoles    []string      `toml:"filter_roles"`
-	FilterEmails   []string      `toml:"filter_emails"`
+	FilterUsers   []string      `toml:"filter_users"`
 }
 
 // FileConfig represents the TOML config file structure.

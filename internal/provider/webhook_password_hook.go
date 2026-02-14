@@ -30,7 +30,7 @@ func NewWebhookPasswordHook(cfg config.WebhookConfig) PasswordChangeHook {
 		return nil
 	}
 	log.Printf("[password-hook] webhook configured: %s %s (filters: domains=%v roles=%v emails=%v)",
-		cfg.Method, cfg.URL, cfg.FilterDomains, cfg.FilterRoles, cfg.FilterEmails)
+		cfg.Method, cfg.URL, cfg.FilterDomains, cfg.FilterRoles, cfg.FilterUsers)
 	return &WebhookPasswordHook{cfg: cfg}
 }
 
@@ -59,8 +59,8 @@ func (h *WebhookPasswordHook) OnPasswordChanged(ctx PasswordChangeContext) error
 		log.Printf("[password-hook] skipping %s: role %q not in filter %v", email, ctx.Role, h.cfg.FilterRoles)
 		return nil
 	}
-	if !matchesFilter(email, h.cfg.FilterEmails) {
-		log.Printf("[password-hook] skipping %s: email not in filter %v", email, h.cfg.FilterEmails)
+	if !matchesFilter(email, h.cfg.FilterUsers) {
+		log.Printf("[password-hook] skipping %s: email not in filter %v", email, h.cfg.FilterUsers)
 		return nil
 	}
 
