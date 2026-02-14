@@ -1,21 +1,31 @@
 # tinyauth-usermanagement
 
-Companion sidecar app for [tinyauth](https://github.com/steveiliop56/tinyauth). It manages users stored in the shared plain text users file:
+Companion sidecar app for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4). It manages users stored in the shared plain text users file:
 
 - `username:bcrypt_hash`
 - `username:bcrypt_hash:totp_secret`
 
-## Features (scaffolded + functional baseline)
+## Features
 
 - Password reset by token (1h default) + email sender hook
-- Signup flow with optional admin approval (`SIGNUP_REQUIRE_APPROVAL=true`)
-- TOTP setup/enable/disable/recovery endpoints
+- Signup flow with optional admin approval (`SIGNUP_REQUIRE_APPROVAL=true`) or fully disabled (`DISABLE_SIGNUP=true`)
+- TOTP setup/enable/disable/recovery with copyable OTP URL
 - Account profile + password change
-- SQLite for sessions, reset tokens, pending signups
+- SSO auto-login from tinyauth session (no double login)
+- In-memory sessions (no database required)
 - Restarts tinyauth container after users file mutations (via Docker socket)
-- React + MUI SPA embedded in Go binary (`embed.FS`)
+- React + Tailwind + shadcn/ui SPA embedded in Go binary (`embed.FS`)
+- Serves under `/manage` base path (designed for Traefik PathPrefix routing)
 
-## Run locally
+## Quick start
+
+See [`examples/docker-compose.yml`](examples/docker-compose.yml) for a complete Traefik setup with tinyauth + usermanagement.
+
+```bash
+sudo docker compose up -d
+```
+
+## Run locally (development)
 
 ```bash
 cd frontend
@@ -26,85 +36,85 @@ go mod tidy
 go run .
 ```
 
-## Docker compose
+## Environment variables
 
-```bash
-sudo docker compose up --build
-```
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8080` | Server port |
+| `USERS_FILE_PATH` | `/data/users.txt` | Path to tinyauth users file |
+| `USERS_TOML` | `/users/users.toml` | Path to users TOML metadata |
+| `TINYAUTH_CONTAINER_NAME` | `tinyauth` | Container to restart after user changes |
+| `DOCKER_SOCKET_PATH` | `/var/run/docker.sock` | Docker socket path |
+| `DISABLE_SIGNUP` | `false` | Disable signup (hides UI + blocks API) |
+| `SIGNUP_REQUIRE_APPROVAL` | `false` | Require admin approval for signups |
+| `TINYAUTH_VERIFY_URL` | `http://tinyauth:3000/api/auth/traefik` | Tinyauth forwardauth URL for SSO |
+| `SESSION_COOKIE_NAME` | `tinyauth_um_session` | Session cookie name |
+| `SESSION_SECRET` | `dev-secret-change-me` | Session signing secret |
+| `SESSION_TTL_SECONDS` | `86400` | Session lifetime |
+| `SECURE_COOKIE` | `false` | Send cookies over HTTPS only |
+| `TOTP_ISSUER` | `tinyauth` | TOTP issuer name in authenticator apps |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | — | Email configuration |
+| `MAIL_BASE_URL` | `http://localhost:8080` | Base URL for password reset emails |
+| `CONFIG_PATH` | `/data/config.toml` | Webhook configuration file |
+| `CORS_ORIGINS` | `*` | Allowed CORS origins |
 
-> Use `sudo` for docker commands (user not in docker group).
+## SSO (Single Sign-On)
 
-## Important environment variables
+When a user is logged in to tinyauth and visits `/manage`, usermanagement automatically creates a session by verifying the tinyauth session cookie via the forwardauth endpoint. No double login required.
 
-- `USERS_FILE_PATH` (default `/data/users.txt`)
-- `SQLITE_PATH` (default `/data/usermanagement.db`)
-- `SESSION_COOKIE_NAME` (default `tinyauth_um_session`)
-- `RESET_TOKEN_TTL_SECONDS` (default `3600`)
-- `SIGNUP_REQUIRE_APPROVAL` (default `false`)
-- `TINYAUTH_CONTAINER_NAME` (default `tinyauth`)
-- `DOCKER_SOCKET_PATH` (default `/var/run/docker.sock`)
-- `SMTP_*` vars for mail
-- `CONFIG_PATH` (default `/data/config.toml`) — webhook configuration file
+Set `TINYAUTH_VERIFY_URL` to empty string to disable SSO.
 
 ## Webhook configuration (`config.toml`)
 
 Password sync and SMS webhooks are configured via a TOML file. See [`config.example.toml`](config.example.toml) for a full example.
 
-Set the path via `CONFIG_PATH` env var (default: `/data/config.toml`).
-
 ### Password change webhook
 
-Called after any successful password change (change, reset, signup). Fire-and-forget: failures are logged but don't affect the local password change.
+Called after any successful password change. Fire-and-forget.
 
 ```toml
-[password_hook]
+[[password_hooks]]
 enabled = true
-url = "https://your-server.com:2222/CMD_API_EMAIL_PW"
+url = "https://your-server.com/api/password"
 method = "POST"
 content_type = "application/x-www-form-urlencoded"
 body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
 timeout = 10
-
-[password_hook.headers]
-Authorization = "Basic base64-encoded-credentials"
 ```
 
-**Template variables:** `{{.Email}}` (full email), `{{.User}}` (part before @), `{{.Domain}}` (part after @), `{{.Password}}` (new plaintext password).
+**Template variables:** `{{.Email}}`, `{{.User}}` (before @), `{{.Domain}}` (after @), `{{.Password}}` (plaintext).
 
 ### SMS webhook
 
-Used for sending SMS messages (e.g. password reset codes). If configured in `config.toml`, it takes precedence over `SMS_WEBHOOK_*` env vars.
+Used for SMS-based password reset codes.
 
 ```toml
 [sms]
 enabled = true
-url = "https://gw.cmtelecom.com/v1.0/message"
+url = "https://api.sms-provider.com/send"
 method = "POST"
 content_type = "application/json"
-body = '{"messages":{"authentication":{"producttoken":"xxx"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}'
+body = '{"to":"{{.To}}","message":"{{.Message}}"}'
 ```
-
-**Template variables:** `{{.To}}` (phone number), `{{.Message}}` (SMS text).
 
 ## API overview
 
-Public:
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `POST /api/password-reset/request`
-- `POST /api/password-reset/confirm`
-- `POST /api/signup`
-- `POST /api/signup/approve`
+All API routes are under `/manage/api/`.
 
-Authenticated:
-- `GET /api/account/profile`
-- `POST /api/account/change-password`
-- `POST /api/account/totp/setup`
-- `POST /api/account/totp/enable`
-- `POST /api/account/totp/disable`
-- `POST /api/account/totp/recover`
+**Public:**
+- `POST /manage/api/auth/login`
+- `POST /manage/api/auth/logout`
+- `GET  /manage/api/auth/sso` — SSO auto-login check
+- `POST /manage/api/password-reset/request`
+- `POST /manage/api/password-reset/confirm`
+- `POST /manage/api/signup` (disabled when `DISABLE_SIGNUP=true`)
+- `GET  /manage/api/features` — runtime feature flags
+- `GET  /manage/api/health`
 
-## Notes
-
-- `signup/approve` is intentionally bare-bones scaffold endpoint. Add proper admin auth before production use.
-- Recovery key flow is scaffolded with a placeholder format `RECOVERY-<username>`.
+**Authenticated:**
+- `GET  /manage/api/account/profile`
+- `POST /manage/api/account/change-password`
+- `POST /manage/api/account/totp/setup`
+- `POST /manage/api/account/totp/enable`
+- `POST /manage/api/account/totp/disable`
+- `POST /manage/api/account/totp/recover`
