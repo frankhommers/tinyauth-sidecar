@@ -19,11 +19,11 @@ type UserRecord struct {
 }
 
 type UserFileService struct {
-	cfg config.Config
+	cfg *config.Config
 	mu  sync.Mutex
 }
 
-func NewUserFileService(cfg config.Config) *UserFileService {
+func NewUserFileService(cfg *config.Config) *UserFileService {
 	return &UserFileService{cfg: cfg}
 }
 

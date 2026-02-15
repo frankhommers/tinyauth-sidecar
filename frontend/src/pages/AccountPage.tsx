@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
-import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield, Settings, CheckCircle, XCircle } from 'lucide-react'
+import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield, Settings, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 
 import { useFeatures } from '@/context/FeaturesContext'
 
@@ -67,6 +67,7 @@ export default function AccountPage() {
   const [testSmsTo, setTestSmsTo] = useState('')
   const [testEmailMsg, setTestEmailMsg] = useState('')
   const [testSmsMsg, setTestSmsMsg] = useState('')
+  const [reloadMsg, setReloadMsg] = useState('')
 
   const load = async () => {
     try {
@@ -371,6 +372,28 @@ export default function AccountPage() {
                           <><XCircle className="h-4 w-4 text-red-500" /><span>{t('accountPage.smsNotConfigured')}</span></>
                         )}
                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={async () => {
+                          setReloadMsg('')
+                          try {
+                            await api.post('/admin/reload-config')
+                            setReloadMsg(t('accountPage.reloadSuccess'))
+                            // Refresh admin status after reload
+                            api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
+                          } catch (e: any) {
+                            setReloadMsg(t('accountPage.testFailed') + ': ' + (e?.response?.data?.error || ''))
+                          }
+                        }}
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        {t('accountPage.reloadConfig')}
+                      </Button>
+                      {reloadMsg && <span className="text-sm">{reloadMsg}</span>}
                     </div>
 
                     {adminStatus.email && (

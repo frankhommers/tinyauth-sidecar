@@ -9,10 +9,10 @@ import (
 )
 
 type AuthHandler struct {
-	cfg config.Config
+	cfg *config.Config
 }
 
-func NewAuthHandler(cfg config.Config) *AuthHandler {
+func NewAuthHandler(cfg *config.Config) *AuthHandler {
 	return &AuthHandler{cfg: cfg}
 }
 

@@ -10,9 +10,9 @@ import (
 	"github.com/jordan-wright/email"
 )
 
-type MailService struct{ cfg config.Config }
+type MailService struct{ cfg *config.Config }
 
-func NewMailService(cfg config.Config) *MailService { return &MailService{cfg: cfg} }
+func NewMailService(cfg *config.Config) *MailService { return &MailService{cfg: cfg} }
 
 func (s *MailService) SendResetEmail(toEmail, token string) error {
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", s.cfg.MailBaseURL, token)
