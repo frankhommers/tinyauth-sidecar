@@ -114,10 +114,17 @@ type WebhookConfig struct {
 	FilterUsers   []string      `toml:"filter_users"`
 }
 
+// PasswordPolicy configures password strength requirements.
+type PasswordPolicy struct {
+	MinLength   int `toml:"min_length"`
+	MinStrength int `toml:"min_strength"`
+}
+
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
-	PasswordHooks []WebhookConfig `toml:"password_hooks"`
-	SMS           WebhookConfig   `toml:"sms"`
+	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
+	PasswordHooks  []WebhookConfig `toml:"password_hooks"`
+	SMS            WebhookConfig   `toml:"sms"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
