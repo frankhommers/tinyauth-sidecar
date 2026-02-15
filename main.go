@@ -47,6 +47,23 @@ func main() {
 		cfg.UsernameIsEmail = *fileCfg.Users.UsernameIsEmail
 	}
 
+	// SMTP: config.toml takes precedence over env vars (only override non-empty fields)
+	if fileCfg.SMTP.Host != "" {
+		cfg.SMTPHost = fileCfg.SMTP.Host
+	}
+	if fileCfg.SMTP.Port > 0 {
+		cfg.SMTPPort = fileCfg.SMTP.Port
+	}
+	if fileCfg.SMTP.Username != "" {
+		cfg.SMTPUsername = fileCfg.SMTP.Username
+	}
+	if fileCfg.SMTP.Password != "" {
+		cfg.SMTPPassword = fileCfg.SMTP.Password
+	}
+	if fileCfg.SMTP.From != "" {
+		cfg.SMTPFrom = fileCfg.SMTP.From
+	}
+
 	passwordTargets := provider.NewPasswordTargetProvider()
 	var passwordHooks []provider.PasswordChangeHook
 	for _, hookCfg := range fileCfg.PasswordHooks {
@@ -103,6 +120,10 @@ func main() {
 		// Account management endpoints
 		accountHandler := handler.NewAccountHandler(accountSvc)
 		accountHandler.Register(authed)
+
+		// Admin endpoints
+		adminHandler := handler.NewAdminHandler(cfg, smsProvider, usersSvc)
+		adminHandler.Register(authed)
 	}
 
 	serveSPA(r)

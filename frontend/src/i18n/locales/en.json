@@ -79,7 +79,17 @@
     "totpQrAlt": "QR code for verification app",
     "profileSaved": "Profile saved",
     "totpSectionTitle": "Two-factor authentication",
-    "totpSetupInstructions": "Scan the QR code with your authenticator app and enter the code to confirm."
+    "totpSetupInstructions": "Scan the QR code with your authenticator app and enter the code to confirm.",
+    "tabAdmin": "Admin",
+    "adminStatus": "Configuration",
+    "emailConfigured": "Email configured",
+    "emailNotConfigured": "Email not configured",
+    "smsConfigured": "SMS configured",
+    "smsNotConfigured": "SMS not configured",
+    "testEmail": "Send test email",
+    "testSms": "Send test SMS",
+    "testSuccess": "Sent!",
+    "testFailed": "Failed to send"
   },
   "password": {
     "tooShort": "Password must be at least 8 characters",
