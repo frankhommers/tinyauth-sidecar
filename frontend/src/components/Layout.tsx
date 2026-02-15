@@ -57,10 +57,10 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className="relative min-h-svh bg-cover bg-center"
-      style={{ backgroundImage: 'url(/background.jpg)' }}
+      className={cn("relative min-h-svh bg-cover bg-center", !features.backgroundImage && "bg-background")}
+      style={features.backgroundImage ? { backgroundImage: `url(${features.backgroundImage})` } : undefined}
     >
-      <div className="absolute inset-0 bg-black/45 dark:bg-black/55" />
+      {features.backgroundImage && <div className="absolute inset-0 bg-black/25 dark:bg-black/45" />}
 
       <div className="fixed top-4 right-4 z-20 flex items-center gap-2">
         <LanguageSelector />
