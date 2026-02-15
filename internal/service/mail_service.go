@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/smtp"
@@ -47,7 +48,6 @@ func (s *MailService) SendResetEmail(toEmail, token string) error {
 		Username: toEmail,
 	}
 
-	// Render subject
 	subject := s.cfg.EmailSubject
 	if subject == "" {
 		subject = "Password reset"
@@ -57,7 +57,6 @@ func (s *MailService) SendResetEmail(toEmail, token string) error {
 		return fmt.Errorf("email subject template: %w", err)
 	}
 
-	// Render body
 	bodyTmpl := s.cfg.EmailBody
 	if bodyTmpl == "" {
 		bodyTmpl = defaultEmailBody
@@ -72,9 +71,8 @@ func (s *MailService) SendResetEmail(toEmail, token string) error {
 	e.To = []string{toEmail}
 	e.Subject = renderedSubject
 	e.Text = []byte(renderedBody)
-	addr := fmt.Sprintf("%s:%d", s.cfg.SMTPHost, s.cfg.SMTPPort)
-	auth := smtp.PlainAuth("", s.cfg.SMTPUsername, s.cfg.SMTPPassword, s.cfg.SMTPHost)
-	return e.Send(addr, auth)
+
+	return s.sendEmail(e)
 }
 
 // SendTestEmail sends a simple test email to verify SMTP configuration.
@@ -87,9 +85,27 @@ func (s *MailService) SendTestEmail(toEmail string) error {
 	e.To = []string{toEmail}
 	e.Subject = "TinyAuth — Test email"
 	e.Text = []byte("This is a test email from TinyAuth Usermanagement.\n\nIf you received this, your email configuration is working correctly.")
+
+	return s.sendEmail(e)
+}
+
+// sendEmail sends an email using the appropriate TLS method based on SMTP port.
+func (s *MailService) sendEmail(e *email.Email) error {
 	addr := fmt.Sprintf("%s:%d", s.cfg.SMTPHost, s.cfg.SMTPPort)
 	auth := smtp.PlainAuth("", s.cfg.SMTPUsername, s.cfg.SMTPPassword, s.cfg.SMTPHost)
-	return e.Send(addr, auth)
+	tlsCfg := &tls.Config{ServerName: s.cfg.SMTPHost}
+
+	switch s.cfg.SMTPPort {
+	case 465:
+		// Implicit TLS (SMTPS)
+		return e.SendWithTLS(addr, auth, tlsCfg)
+	case 587:
+		// STARTTLS
+		return e.SendWithStartTLS(addr, auth, tlsCfg)
+	default:
+		// Plain
+		return e.Send(addr, auth)
+	}
 }
 
 func renderTemplate(name, tmplStr string, data emailData) (string, error) {
