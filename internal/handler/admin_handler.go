@@ -13,15 +13,16 @@ import (
 )
 
 type AdminHandler struct {
-	cfg      *config.Config
-	mail     *service.MailService
-	sms      provider.SMSProvider
-	usersSvc *service.UserFileService
-	store    *store.Store
+	cfg       *config.Config
+	mail      *service.MailService
+	sms       provider.SMSProvider
+	usersSvc  *service.UserFileService
+	store     *store.Store
+	dockerSvc *service.DockerService
 }
 
-func NewAdminHandler(cfg *config.Config, mail *service.MailService, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
-	return &AdminHandler{cfg: cfg, mail: mail, sms: sms, usersSvc: usersSvc, store: st}
+func NewAdminHandler(cfg *config.Config, mail *service.MailService, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store, dockerSvc *service.DockerService) *AdminHandler {
+	return &AdminHandler{cfg: cfg, mail: mail, sms: sms, usersSvc: usersSvc, store: st, dockerSvc: dockerSvc}
 }
 
 // isAdmin checks whether the authenticated user has role "admin".
@@ -53,6 +54,8 @@ func (h *AdminHandler) Register(r *gin.RouterGroup) {
 	admin.POST("/admin/test-sms", h.TestSMS)
 	admin.GET("/admin/status", h.Status)
 	admin.POST("/admin/reload-config", h.ReloadConfig)
+	admin.POST("/admin/restart-tinyauth", h.RestartTinyauth)
+	admin.GET("/admin/tinyauth-health", h.TinyauthHealth)
 }
 
 func (h *AdminHandler) TestEmail(c *gin.Context) {
@@ -111,4 +114,19 @@ func (h *AdminHandler) ReloadConfig(c *gin.Context) {
 	h.cfg.ApplyFileConfig(fileCfg)
 	log.Printf("[admin] config.toml reloaded by %s", username(c))
 	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *AdminHandler) RestartTinyauth(c *gin.Context) {
+	log.Printf("[admin] tinyauth restart requested by %s", username(c))
+	h.dockerSvc.RestartTinyauth()
+	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "restart initiated"})
+}
+
+func (h *AdminHandler) TinyauthHealth(c *gin.Context) {
+	running, err := h.dockerSvc.IsTinyauthRunning()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"running": false, "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"running": running})
 }

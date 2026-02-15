@@ -39,3 +39,24 @@ func (s *DockerService) RestartTinyauth() {
 		}
 	}()
 }
+
+// IsTinyauthRunning checks if the tinyauth container is running.
+func (s *DockerService) IsTinyauthRunning() (bool, error) {
+	cli, err := client.NewClientWithOpts(
+		client.WithHost("unix://"+s.cfg.DockerSocketPath),
+		client.WithAPIVersionNegotiation(),
+	)
+	if err != nil {
+		return false, err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	info, err := cli.ContainerInspect(ctx, s.cfg.TinyauthContainerName)
+	if err != nil {
+		return false, err
+	}
+	return info.State != nil && info.State.Running, nil
+}

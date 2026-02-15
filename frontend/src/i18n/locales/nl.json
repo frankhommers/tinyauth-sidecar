@@ -91,7 +91,13 @@
     "testSuccess": "Verstuurd!",
     "testFailed": "Versturen mislukt",
     "reloadConfig": "Configuratie herladen",
-    "reloadSuccess": "Configuratie herladen"
+    "reloadSuccess": "Configuratie herladen",
+    "reloadFailed": "Herladen mislukt",
+    "restartTinyauth": "TinyAuth herstarten",
+    "restartFailed": "Herstarten mislukt",
+    "tinyauthUp": "TinyAuth is actief",
+    "tinyauthDown": "TinyAuth is niet bereikbaar",
+    "tinyauthRestarting": "TinyAuth herstart…"
   },
   "password": {
     "tooShort": "Wachtwoord moet minimaal 8 tekens bevatten",
