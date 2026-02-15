@@ -3,6 +3,7 @@ package provider
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -136,8 +137,17 @@ func matchesFilter(value string, filter []string) bool {
 	return false
 }
 
+// jsonEscape returns a JSON-safe string (without surrounding quotes).
+func jsonEscape(s string) string {
+	b, _ := json.Marshal(s)
+	// Remove surrounding quotes
+	return string(b[1 : len(b)-1])
+}
+
 func execTmpl(name, tmplStr string, data interface{}) (string, error) {
-	tmpl, err := template.New(name).Parse(tmplStr)
+	tmpl, err := template.New(name).Funcs(template.FuncMap{
+		"jsonEscape": jsonEscape,
+	}).Parse(tmplStr)
 	if err != nil {
 		return "", err
 	}
