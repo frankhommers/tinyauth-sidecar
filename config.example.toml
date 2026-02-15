@@ -35,6 +35,14 @@ headers = [
 # If not configured here, falls back to SMS_WEBHOOK_* env vars.
 # Template variables: {{.To}} (phone number), {{.Message}}
 
+# SMTP configuration (overrides SMTP_* env vars when set)
+# [smtp]
+# host = "mail.example.com"
+# port = 465
+# username = "user@example.com"
+# password = "secret"
+# from = "noreply@example.com"
+
 # Example: CM.com Messages API
 [sms]
 enabled = false

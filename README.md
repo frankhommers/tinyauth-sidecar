@@ -139,10 +139,15 @@ All routes under `/manage/api/`.
 - `POST /account/totp/enable`
 - `POST /account/totp/disable`
 - `POST /account/totp/recover`
+- `GET  /admin/status`
+- `POST /admin/test-email`
+- `POST /admin/test-sms`
 
 ## Email setup
 
-To enable email-based password resets, configure these environment variables:
+To enable email-based password resets, configure SMTP via environment variables or `config.toml`.
+
+**Environment variables:**
 
 ```yaml
 SMTP_HOST: smtp.example.com
@@ -152,6 +157,52 @@ SMTP_PASSWORD: your-smtp-password
 SMTP_FROM: noreply@example.com
 MAIL_BASE_URL: https://auth.example.com/manage  # base URL used in reset links
 ```
+
+**config.toml** (overrides env vars when set):
+
+```toml
+[smtp]
+host = "smtp.example.com"
+port = 465
+username = "noreply@example.com"
+password = "your-smtp-password"
+from = "noreply@example.com"
+```
+
+Only non-empty fields override the corresponding env var, so you can mix both approaches.
+
+> **Dev tip:** If SMTP is not configured, reset tokens are logged to stdout instead of being emailed.
+
+## SMS setup
+
+SMS-based password resets use a configurable webhook. Configure in `config.toml`:
+
+```toml
+[sms]
+enabled = true
+url = "https://api.smsprovider.com/v1/send"
+method = "POST"
+content_type = "application/json"
+timeout = 15
+body = '{"to":"{{.To}}","message":"{{.Message}}"}'
+headers = [
+  { key = "Authorization", value = "Bearer your-api-key" }
+]
+```
+
+Template variables: `{{.To}}` (phone number), `{{.Message}}` (the reset code text).
+
+Alternatively, configure via `SMS_WEBHOOK_*` environment variables (see `config.example.toml`).
+
+## Admin endpoints
+
+Authenticated endpoints for testing configuration:
+
+- `POST /admin/test-email` — send a test email (`{"to": "test@example.com"}`)
+- `POST /admin/test-sms` — send a test SMS (`{"to": "+31612345678"}`)
+- `GET /admin/status` — returns configured features: `{"email": true, "sms": false, "usernameIsEmail": true, "userCount": 3}`
+
+These are also available in the Admin tab of the account page UI.
 
 ## Tinyauth config tip
 

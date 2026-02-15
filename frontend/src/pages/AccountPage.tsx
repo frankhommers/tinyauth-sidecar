@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
-import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield } from 'lucide-react'
+import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield, Settings, CheckCircle, XCircle } from 'lucide-react'
 
 import { useFeatures } from '@/context/FeaturesContext'
 
@@ -60,6 +60,13 @@ export default function AccountPage() {
   const [showTotpSetup, setShowTotpSetup] = useState(false)
   const [totpLoading, setTotpLoading] = useState(false)
 
+  // Admin fields
+  const [adminStatus, setAdminStatus] = useState<{ email: boolean; sms: boolean; usernameIsEmail: boolean; userCount: number } | null>(null)
+  const [testEmailTo, setTestEmailTo] = useState('')
+  const [testSmsTo, setTestSmsTo] = useState('')
+  const [testEmailMsg, setTestEmailMsg] = useState('')
+  const [testSmsMsg, setTestSmsMsg] = useState('')
+
   const load = async () => {
     try {
       const data = (await api.get('/account/profile')).data
@@ -73,6 +80,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     void load()
+    api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
   }, [])
 
   const startTotpSetup = async () => {
@@ -113,6 +121,10 @@ export default function AccountPage() {
               <TabsTrigger value="security" className="gap-1.5">
                 <Shield className="h-3.5 w-3.5" />
                 {t('accountPage.tabSecurity')}
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="gap-1.5">
+                <Settings className="h-3.5 w-3.5" />
+                {t('accountPage.tabAdmin')}
               </TabsTrigger>
             </TabsList>
 
@@ -324,6 +336,91 @@ export default function AccountPage() {
                       {t('accountPage.disableTotp')}
                     </Button>
                   </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Tab: Admin */}
+            <TabsContent value="admin">
+              <div className="grid gap-4">
+                {adminStatus && (
+                  <>
+                    <h3 className="font-medium">{t('accountPage.adminStatus')}</h3>
+                    <div className="grid gap-2">
+                      <div className="flex items-center gap-2">
+                        {adminStatus.email ? (
+                          <><CheckCircle className="h-4 w-4 text-green-500" /><span>{t('accountPage.emailConfigured')}</span></>
+                        ) : (
+                          <><XCircle className="h-4 w-4 text-red-500" /><span>{t('accountPage.emailNotConfigured')}</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {adminStatus.sms ? (
+                          <><CheckCircle className="h-4 w-4 text-green-500" /><span>{t('accountPage.smsConfigured')}</span></>
+                        ) : (
+                          <><XCircle className="h-4 w-4 text-red-500" /><span>{t('accountPage.smsNotConfigured')}</span></>
+                        )}
+                      </div>
+                    </div>
+
+                    {adminStatus.email && (
+                      <div className="grid gap-2 rounded-md border p-3">
+                        <Label>{t('accountPage.testEmail')}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          <Input
+                            type="email"
+                            value={testEmailTo}
+                            onChange={(e) => { setTestEmailTo(e.target.value); setTestEmailMsg('') }}
+                            placeholder="test@example.com"
+                            className="flex-1 min-w-[180px]"
+                          />
+                          <Button
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await api.post('/admin/test-email', { to: testEmailTo })
+                                setTestEmailMsg(t('accountPage.testSuccess'))
+                              } catch (e: any) {
+                                setTestEmailMsg(t('accountPage.testFailed') + ': ' + (e?.response?.data?.error || ''))
+                              }
+                            }}
+                          >
+                            {t('accountPage.testEmail')}
+                          </Button>
+                        </div>
+                        {testEmailMsg && <p className="text-sm">{testEmailMsg}</p>}
+                      </div>
+                    )}
+
+                    {adminStatus.sms && (
+                      <div className="grid gap-2 rounded-md border p-3">
+                        <Label>{t('accountPage.testSms')}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          <Input
+                            type="tel"
+                            value={testSmsTo}
+                            onChange={(e) => { setTestSmsTo(e.target.value); setTestSmsMsg('') }}
+                            placeholder="+31612345678"
+                            className="flex-1 min-w-[180px]"
+                          />
+                          <Button
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await api.post('/admin/test-sms', { to: testSmsTo })
+                                setTestSmsMsg(t('accountPage.testSuccess'))
+                              } catch (e: any) {
+                                setTestSmsMsg(t('accountPage.testFailed') + ': ' + (e?.response?.data?.error || ''))
+                              }
+                            }}
+                          >
+                            {t('accountPage.testSms')}
+                          </Button>
+                        </div>
+                        {testSmsMsg && <p className="text-sm">{testSmsMsg}</p>}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </TabsContent>

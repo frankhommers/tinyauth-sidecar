@@ -127,12 +127,22 @@ type UsersConfig struct {
 	UsernameIsEmail *bool `toml:"username_is_email"`
 }
 
+// SMTPConfig holds SMTP settings from config.toml.
+type SMTPConfig struct {
+	Host     string `toml:"host"`
+	Port     int    `toml:"port"`
+	Username string `toml:"username"`
+	Password string `toml:"password"`
+	From     string `toml:"from"`
+}
+
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
 	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
 	PasswordHooks  []WebhookConfig `toml:"password_hooks"`
 	SMS            WebhookConfig   `toml:"sms"`
 	Users          UsersConfig     `toml:"users"`
+	SMTP           SMTPConfig      `toml:"smtp"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).

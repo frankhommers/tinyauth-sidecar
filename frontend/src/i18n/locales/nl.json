@@ -79,7 +79,17 @@
     "totpQrAlt": "QR-code voor verificatie-app",
     "profileSaved": "Profiel opgeslagen",
     "totpSectionTitle": "Tweefactorauthenticatie",
-    "totpSetupInstructions": "Scan de QR-code met je verificatie-app en voer de code in om te bevestigen."
+    "totpSetupInstructions": "Scan de QR-code met je verificatie-app en voer de code in om te bevestigen.",
+    "tabAdmin": "Admin",
+    "adminStatus": "Configuratie",
+    "emailConfigured": "Email geconfigureerd",
+    "emailNotConfigured": "Email niet geconfigureerd",
+    "smsConfigured": "SMS geconfigureerd",
+    "smsNotConfigured": "SMS niet geconfigureerd",
+    "testEmail": "Test email versturen",
+    "testSms": "Test SMS versturen",
+    "testSuccess": "Verstuurd!",
+    "testFailed": "Versturen mislukt"
   },
   "password": {
     "tooShort": "Wachtwoord moet minimaal 8 tekens bevatten",
