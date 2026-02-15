@@ -1,40 +1,38 @@
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Monitor } from 'lucide-react'
 import { useTheme } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
+
+const modes = ['light', 'dark', 'system'] as const
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
-  // Resolve effective theme for display
-  const isDark =
+  const currentIndex = modes.indexOf(theme)
+  const next = () => setTheme(modes[(currentIndex + 1) % modes.length])
+
+  // Resolve effective appearance for styling
+  const effectiveDark =
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+  const Icon = theme === 'system' ? Monitor : theme === 'dark' ? Moon : Sun
+  const label = theme === 'system' ? 'System' : theme === 'dark' ? 'Dark' : 'Light'
 
   return (
     <button
       type="button"
-      role="switch"
-      aria-checked={isDark}
-      aria-label="Toggle dark mode"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={`Theme: ${label}. Click to change.`}
+      onClick={next}
       className={cn(
-        'relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full border transition-colors',
+        'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors',
         'bg-card/75 border-border backdrop-blur-md',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+        'hover:bg-accent hover:text-accent-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        effectiveDark ? 'text-foreground' : 'text-foreground'
       )}
     >
-      <span
-        className={cn(
-          'pointer-events-none flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform duration-200',
-          isDark ? 'translate-x-7' : 'translate-x-0.5'
-        )}
-      >
-        {isDark ? (
-          <Moon className="h-3.5 w-3.5" />
-        ) : (
-          <Sun className="h-3.5 w-3.5" />
-        )}
-      </span>
+      <Icon className="h-3.5 w-3.5" />
+      <span className="hidden sm:inline">{label}</span>
     </button>
   )
 }
