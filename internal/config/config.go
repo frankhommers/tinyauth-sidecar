@@ -34,6 +34,7 @@ type Config struct {
 	EmailSubject            string
 	EmailBody               string
 	BackgroundImage         string
+	Title                   string
 }
 
 func Load() *Config {
@@ -64,6 +65,7 @@ func Load() *Config {
 		EmailSubject:          getEnv("EMAIL_SUBJECT", "Password reset"),
 		EmailBody:             getEnv("EMAIL_BODY", ""),
 		BackgroundImage:       getEnv("BACKGROUND_IMAGE", "/background.jpg"),
+		Title:                getEnv("TITLE", ""),
 	}
 
 	return cfg
@@ -136,6 +138,7 @@ type UsersConfig struct {
 // UIConfig configures UI appearance.
 type UIConfig struct {
 	BackgroundImage string `toml:"background_image"`
+	Title           string `toml:"title"`
 }
 
 // SMTPConfig holds SMTP settings from config.toml.
@@ -236,6 +239,9 @@ func (c *Config) ApplyFileConfig(fc FileConfig) {
 	}
 	if fc.UI.BackgroundImage != "" {
 		c.BackgroundImage = fc.UI.BackgroundImage
+	}
+	if fc.UI.Title != "" {
+		c.Title = fc.UI.Title
 	}
 }
 
