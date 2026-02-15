@@ -1,4 +1,3 @@
-import { useRef, useEffect, useState } from 'react'
 import { Moon, Sun, Monitor } from 'lucide-react'
 import { useTheme } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
@@ -11,21 +10,14 @@ const modes = [
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [offset, setOffset] = useState(0)
   const activeIndex = modes.findIndex((m) => m.value === theme)
 
-  useEffect(() => {
-    if (!containerRef.current) return
-    const buttons = containerRef.current.querySelectorAll<HTMLButtonElement>('button')
-    if (buttons[activeIndex]) {
-      setOffset(buttons[activeIndex].offsetLeft - containerRef.current.offsetLeft)
-    }
-  }, [activeIndex])
+  // Each button is h-7 w-7 (28px), gap-0.5 (2px), container has p-1 (4px)
+  // Position = 4px padding + index * (28px button + 2px gap)
+  const offset = 4 + activeIndex * 30
 
   return (
     <div
-      ref={containerRef}
       className={cn(
         'relative inline-flex h-9 items-center rounded-full border p-1 gap-0.5',
         'bg-card/75 border-border backdrop-blur-md'
