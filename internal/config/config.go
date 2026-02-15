@@ -63,7 +63,7 @@ func Load() *Config {
 		UsernameIsEmail:       getEnvBool("USERNAME_IS_EMAIL", true),
 		EmailSubject:          getEnv("EMAIL_SUBJECT", "Password reset"),
 		EmailBody:             getEnv("EMAIL_BODY", ""),
-		BackgroundImage:       getEnv("BACKGROUND_IMAGE", ""),
+		BackgroundImage:       getEnv("BACKGROUND_IMAGE", "/background.jpg"),
 	}
 
 	return cfg
