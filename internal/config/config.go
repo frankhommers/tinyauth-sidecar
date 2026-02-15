@@ -31,6 +31,8 @@ type Config struct {
 	MinPasswordLength       int
 	MinPasswordStrength     int
 	UsernameIsEmail         bool
+	EmailSubject            string
+	EmailBody               string
 }
 
 func Load() *Config {
@@ -58,6 +60,8 @@ func Load() *Config {
 		MinPasswordLength:     getEnvInt("MIN_PASSWORD_LENGTH", 8),
 		MinPasswordStrength:   getEnvInt("MIN_PASSWORD_STRENGTH", 3),
 		UsernameIsEmail:       getEnvBool("USERNAME_IS_EMAIL", true),
+		EmailSubject:          getEnv("EMAIL_SUBJECT", "Password reset"),
+		EmailBody:             getEnv("EMAIL_BODY", ""),
 	}
 
 	return cfg
@@ -136,13 +140,20 @@ type SMTPConfig struct {
 	From     string `toml:"from"`
 }
 
+// EmailTemplateConfig holds email template settings.
+type EmailTemplateConfig struct {
+	Subject string `toml:"subject"`
+	Body    string `toml:"body"`
+}
+
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
 	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
 	PasswordHooks  []WebhookConfig `toml:"password_hooks"`
 	SMS            WebhookConfig   `toml:"sms"`
 	Users          UsersConfig     `toml:"users"`
-	SMTP           SMTPConfig      `toml:"smtp"`
+	SMTP           SMTPConfig          `toml:"smtp"`
+	Email          EmailTemplateConfig `toml:"email"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
@@ -208,6 +219,12 @@ func (c *Config) ApplyFileConfig(fc FileConfig) {
 	}
 	if fc.SMTP.From != "" {
 		c.SMTPFrom = fc.SMTP.From
+	}
+	if fc.Email.Subject != "" {
+		c.EmailSubject = fc.Email.Subject
+	}
+	if fc.Email.Body != "" {
+		c.EmailBody = fc.Email.Body
 	}
 }
 
