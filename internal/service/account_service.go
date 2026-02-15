@@ -15,6 +15,7 @@ import (
 	"tinyauth-usermanagement/internal/store"
 
 	"github.com/google/uuid"
+	zxcvbn "github.com/nbutton23/zxcvbn-go"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -92,9 +93,23 @@ func (s *AccountService) Signup(username, email, password string) (string, error
 	return s.SignupWithPhone(username, email, password, "")
 }
 
+func (s *AccountService) validatePassword(password string) error {
+	if len(password) < s.cfg.MinPasswordLength {
+		return fmt.Errorf("password_too_short")
+	}
+	result := zxcvbn.PasswordStrength(password, nil)
+	if result.Score < s.cfg.MinPasswordStrength {
+		return fmt.Errorf("password_too_weak")
+	}
+	return nil
+}
+
 func (s *AccountService) SignupWithPhone(username, email, password, phone string) (string, error) {
 	if username == "" || password == "" {
 		return "", errors.New("username and password required")
+	}
+	if err := s.validatePassword(password); err != nil {
+		return "", err
 	}
 	if existing, ok, err := s.users.Find(username); err != nil {
 		return "", err
@@ -169,6 +184,9 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword strin
 	}
 	if bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(oldPassword)) != nil {
 		return errors.New("old password invalid")
+	}
+	if err := s.validatePassword(newPassword); err != nil {
+		return err
 	}
 	hash, err := HashPassword(newPassword)
 	if err != nil {

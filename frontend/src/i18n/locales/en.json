@@ -47,10 +47,13 @@
   },
   "accountPage": {
     "title": "Account",
-    "description": "Manage profile, password, and two-step verification",
+    "description": "Manage profile, password, and two-factor authentication",
     "notLoggedIn": "Not logged in",
     "profile": "Profile",
-    "totpEnabled": "Two-step verification enabled",
+    "totpEnabled": "Two-factor authentication enabled",
+    "totpLabel": "Two-factor authentication",
+    "totpStatusEnabled": "Enabled",
+    "totpStatusDisabled": "Disabled",
     "changePassword": "Change password",
     "currentPassword": "Current password",
     "passwordChanged": "Password changed",
@@ -59,11 +62,23 @@
     "totpSetup": "Set up verification app (Google Authenticator, Authy, etc.)",
     "generateSecret": "Generate secret",
     "secret": "Secret",
-    "totpEnabledSuccess": "Two-step verification enabled",
-    "totpDisabledSuccess": "Two-step verification disabled",
-    "enableTotp": "Enable two-step verification",
-    "disableTotp": "Disable two-step verification",
+    "totpEnabledSuccess": "Two-factor authentication enabled",
+    "totpDisabledSuccess": "Two-factor authentication disabled",
+    "enableTotp": "Enable two-factor authentication",
+    "disableTotp": "Disable two-factor authentication",
     "recoveryCodes": "Recovery codes",
-    "totpQrAlt": "QR code for verification app"
+    "totpQrAlt": "QR code for verification app",
+    "profileSaved": "Profile saved",
+    "totpSectionTitle": "Two-factor authentication",
+    "totpSetupInstructions": "Scan the QR code with your authenticator app and enter the code to confirm."
+  },
+  "password": {
+    "tooShort": "Password must be at least 8 characters",
+    "tooWeak": "Password is too weak",
+    "strength0": "Very weak",
+    "strength1": "Weak",
+    "strength2": "Fair",
+    "strength3": "Strong",
+    "strength4": "Very strong"
   }
 }
