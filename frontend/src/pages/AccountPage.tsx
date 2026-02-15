@@ -84,7 +84,7 @@ export default function AccountPage() {
   }
 
   return (
-    <Card className="min-w-xs sm:min-w-sm">
+    <Card className="w-full max-w-sm sm:max-w-md overflow-hidden">
       <CardHeader>
         <CardTitle className="text-center text-3xl">{t('accountPage.title')}</CardTitle>
         <CardDescription className="text-center">{t('accountPage.description')}</CardDescription>
@@ -189,7 +189,7 @@ export default function AccountPage() {
                       {t('accountPage.enableTotp')}
                     </Button>
                   ) : (
-                    <div className="grid gap-3 rounded-md border p-4">
+                    <div className="grid gap-3 rounded-md border p-4 overflow-hidden">
                       <p className="text-sm text-muted-foreground">{t('accountPage.totpSetupInstructions')}</p>
 
                       {qrPng && (
@@ -209,8 +209,8 @@ export default function AccountPage() {
                       )}
 
                       {otpUrl && (
-                        <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs">
-                          <span className="flex-1 truncate">{otpUrl}</span>
+                        <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs min-w-0">
+                          <span className="flex-1 truncate min-w-0">{otpUrl}</span>
                           <CopyButton value={otpUrl} />
                         </div>
                       )}
