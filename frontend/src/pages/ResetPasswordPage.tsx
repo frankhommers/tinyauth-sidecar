@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { Button } from '@/components/ui/button'
@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
+import { useFeatures } from '@/context/FeaturesContext'
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<'email' | 'sms'>('email')
-  const [smsEnabled, setSmsEnabled] = useState(false)
+  const features = useFeatures()
+  const defaultTab = features.emailEnabled ? 'email' : 'sms'
+  const [tab, setTab] = useState<'email' | 'sms'>(defaultTab)
 
   const [username, setUsername] = useState('')
   const [token, setToken] = useState('')
@@ -27,23 +29,28 @@ export default function ResetPasswordPage() {
   const [smsMsg, setSmsMsg] = useState('')
   const [codeSent, setCodeSent] = useState(false)
 
-  useEffect(() => {
-    api
-      .get('/features')
-      .then((res) => {
-        setSmsEnabled(res.data.smsEnabled === true)
-      })
-      .catch(() => {})
-  }, [])
+  // If neither email nor SMS is configured, show a message
+  if (features.loaded && !features.emailEnabled && !features.smsEnabled) {
+    return (
+      <Card className="w-full max-w-sm sm:max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center text-3xl">{t('resetPage.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground">{t('resetPage.notConfigured')}</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <Card className="min-w-xs sm:min-w-sm">
+    <Card className="w-full max-w-sm sm:max-w-md">
       <CardHeader>
         <CardTitle className="text-center text-3xl">{t('resetPage.title')}</CardTitle>
         <CardDescription className="text-center">{t('resetPage.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {smsEnabled && (
+        {features.emailEnabled && features.smsEnabled && (
           <div className="grid grid-cols-2 gap-2">
             <Button variant={tab === 'email' ? 'default' : 'outline'} onClick={() => setTab('email')}>
               {t('resetPage.tabEmail')}
@@ -54,7 +61,7 @@ export default function ResetPasswordPage() {
           </div>
         )}
 
-        {tab === 'email' && (
+        {tab === 'email' && features.emailEnabled && (
           <>
             {msg && <div className="rounded-md border bg-muted px-3 py-2 text-sm">{msg}</div>}
             <div className="grid gap-2">
@@ -109,7 +116,7 @@ export default function ResetPasswordPage() {
           </>
         )}
 
-        {tab === 'sms' && smsEnabled && (
+        {tab === 'sms' && features.smsEnabled && (
           <>
             {smsMsg && <div className="rounded-md border bg-muted px-3 py-2 text-sm">{smsMsg}</div>}
             {!codeSent ? (

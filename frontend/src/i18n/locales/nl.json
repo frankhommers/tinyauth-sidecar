@@ -35,6 +35,7 @@
     "tabEmail": "E-mail",
     "tabSms": "SMS",
     "usernameOrEmail": "Gebruikersnaam of e-mailadres",
+    "notConfigured": "Wachtwoord herstellen is niet beschikbaar. Neem contact op met de beheerder.",
     "requestReset": "Nieuw wachtwoord aanvragen",
     "requestResetSuccess": "Als het account bestaat, is er een e-mail verstuurd met verdere instructies.",
     "resetPassword": "Wachtwoord instellen",

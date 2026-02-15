@@ -5,6 +5,7 @@ import { LanguageSelector } from './language-toggle'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
+import { useFeatures } from '@/context/FeaturesContext'
 
 type NavItem = {
   label: string
@@ -35,6 +36,7 @@ function NavItemRender({ item, className }: { item: NavItem; className: string }
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { loggedIn } = useAuth()
+  const features = useFeatures()
 
   const handleLogout = async () => {
     await fetch('/api/user/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
@@ -48,7 +50,9 @@ export function Layout({ children }: { children: ReactNode }) {
       ]
     : [
         { label: t('nav.login'), href: '/' },
-        { label: t('nav.forgotPassword'), path: '/reset-password' },
+        ...(features.emailEnabled || features.smsEnabled
+          ? [{ label: t('nav.forgotPassword'), path: '/reset-password' }]
+          : []),
       ]
 
   return (

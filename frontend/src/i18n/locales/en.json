@@ -35,6 +35,7 @@
     "tabEmail": "Email",
     "tabSms": "SMS",
     "usernameOrEmail": "Username or email",
+    "notConfigured": "Password reset is not available. Please contact the administrator.",
     "requestReset": "Send reset link",
     "requestResetSuccess": "If the user exists, a reset email has been sent (or logged).",
     "resetPassword": "Reset password",

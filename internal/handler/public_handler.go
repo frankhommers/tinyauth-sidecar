@@ -99,6 +99,7 @@ func (h *PublicHandler) ApproveSignup(c *gin.Context) {
 func (h *PublicHandler) Features(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"smsEnabled":    h.account.SMSEnabled(),
+		"emailEnabled":  h.cfg.SMTPHost != "",
 		"signupEnabled": !h.cfg.DisableSignup,
 	})
 }
