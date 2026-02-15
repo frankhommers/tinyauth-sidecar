@@ -55,6 +55,8 @@
     "totpLabel": "Two-factor authentication",
     "totpStatusEnabled": "Enabled",
     "totpStatusDisabled": "Disabled",
+    "tabPassword": "Password",
+    "tabSecurity": "Security",
     "changePassword": "Change password",
     "currentPassword": "Current password",
     "passwordChanged": "Password changed",

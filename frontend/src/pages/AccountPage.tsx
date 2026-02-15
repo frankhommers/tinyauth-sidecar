@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
-import { Copy, Check, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield } from 'lucide-react'
 
 type Profile = {
   username: string
@@ -90,14 +90,28 @@ export default function AccountPage() {
         <CardTitle className="text-center text-3xl">{t('accountPage.title')}</CardTitle>
         <CardDescription className="text-center">{t('accountPage.description')}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        {msg && <div className="rounded-md border bg-muted px-3 py-2 text-sm">{msg}</div>}
+      <CardContent>
+        {msg && <div className="mb-4 rounded-md border bg-muted px-3 py-2 text-sm">{msg}</div>}
 
-        {/* Section 1: Profile */}
         {profile && (
-          <>
-            <div>
-              <h3 className="text-base font-semibold mb-3">{t('accountPage.profile')}</h3>
+          <Tabs defaultValue="profile">
+            <TabsList>
+              <TabsTrigger value="profile" className="gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                {t('accountPage.profile')}
+              </TabsTrigger>
+              <TabsTrigger value="password" className="gap-1.5">
+                <Lock className="h-3.5 w-3.5" />
+                {t('accountPage.tabPassword')}
+              </TabsTrigger>
+              <TabsTrigger value="security" className="gap-1.5">
+                <Shield className="h-3.5 w-3.5" />
+                {t('accountPage.tabSecurity')}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Tab: Profile */}
+            <TabsContent value="profile">
               <div className="grid gap-3">
                 <div className="grid gap-2">
                   <Label>{t('common.username')}</Label>
@@ -127,13 +141,10 @@ export default function AccountPage() {
                   {t('common.save')}
                 </Button>
               </div>
-            </div>
+            </TabsContent>
 
-            <Separator />
-
-            {/* Section 2: Change Password */}
-            <div>
-              <h3 className="text-base font-semibold mb-3">{t('accountPage.changePassword')}</h3>
+            {/* Tab: Password */}
+            <TabsContent value="password">
               <div className="grid gap-3">
                 <div className="grid gap-2">
                   <Label htmlFor="oldPassword">{t('accountPage.currentPassword')}</Label>
@@ -168,123 +179,121 @@ export default function AccountPage() {
                   {t('accountPage.changePassword')}
                 </Button>
               </div>
-            </div>
+            </TabsContent>
 
-            <Separator />
+            {/* Tab: Security (2FA) */}
+            <TabsContent value="security">
+              <div className="grid gap-4">
+                {/* Status display */}
+                <div className="flex items-center gap-2">
+                  {profile.totpEnabled ? (
+                    <>
+                      <ShieldCheck className="h-5 w-5 text-green-500" />
+                      <span className="font-medium text-green-700 dark:text-green-400">{t('accountPage.totpStatusEnabled')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldAlert className="h-5 w-5 text-amber-500" />
+                      <span className="font-medium text-amber-700 dark:text-amber-400">{t('accountPage.totpStatusDisabled')}</span>
+                    </>
+                  )}
+                </div>
 
-            {/* Section 3: Two-Factor Authentication */}
-            <div>
-              <h3 className="text-base font-semibold mb-3">{t('accountPage.totpSectionTitle')}</h3>
-
-              {/* Status display */}
-              <div className="flex items-center gap-2 mb-4">
-                {profile.totpEnabled ? (
+                {/* TOTP disabled: show enable flow */}
+                {!profile.totpEnabled && (
                   <>
-                    <ShieldCheck className="h-5 w-5 text-green-500" />
-                    <span className="font-medium text-green-700 dark:text-green-400">{t('accountPage.totpStatusEnabled')}</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldAlert className="h-5 w-5 text-amber-500" />
-                    <span className="font-medium text-amber-700 dark:text-amber-400">{t('accountPage.totpStatusDisabled')}</span>
+                    {!showTotpSetup ? (
+                      <Button onClick={startTotpSetup} disabled={totpLoading}>
+                        {t('accountPage.enableTotp')}
+                      </Button>
+                    ) : (
+                      <div className="grid gap-3 rounded-md border p-4 overflow-hidden">
+                        <p className="text-sm text-muted-foreground">{t('accountPage.totpSetupInstructions')}</p>
+
+                        {qrPng && (
+                          <img
+                            src={qrPng}
+                            width={220}
+                            className="self-center max-w-full rounded-md border"
+                            alt={t('accountPage.totpQrAlt')}
+                          />
+                        )}
+
+                        {totpSecret && (
+                          <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs break-all">
+                            <span className="flex-1">{t('accountPage.secret')}: {totpSecret}</span>
+                            <CopyButton value={totpSecret} />
+                          </div>
+                        )}
+
+                        {otpUrl && (
+                          <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs min-w-0">
+                            <span className="flex-1 truncate min-w-0">{otpUrl}</span>
+                            <CopyButton value={otpUrl} />
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-2">
+                          <Input
+                            value={totpCode}
+                            onChange={(e) => setTotpCode(e.target.value)}
+                            placeholder={t('common.code')}
+                            className="flex-1 min-w-[120px]"
+                          />
+                          <Button
+                            onClick={async () => {
+                              try {
+                                await api.post('/account/totp/enable', { secret: totpSecret, code: totpCode })
+                                setMsg(t('accountPage.totpEnabledSuccess'))
+                                setShowTotpSetup(false)
+                                setTotpSecret('')
+                                setQrPng('')
+                                setOtpUrl('')
+                                setTotpCode('')
+                                void load()
+                              } catch (e: any) {
+                                setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                              }
+                            }}
+                          >
+                            {t('common.enable')}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
-              </div>
 
-              {/* TOTP disabled: show enable flow */}
-              {!profile.totpEnabled && (
-                <>
-                  {!showTotpSetup ? (
-                    <Button onClick={startTotpSetup} disabled={totpLoading}>
-                      {t('accountPage.enableTotp')}
+                {/* TOTP enabled: show disable with password */}
+                {profile.totpEnabled && (
+                  <div className="flex flex-wrap gap-2">
+                    <Input
+                      type="password"
+                      value={disablePassword}
+                      onChange={(e) => setDisablePassword(e.target.value)}
+                      placeholder={t('common.password')}
+                      className="flex-1 min-w-[120px]"
+                    />
+                    <Button
+                      variant="destructive"
+                      onClick={async () => {
+                        try {
+                          await api.post('/account/totp/disable', { password: disablePassword })
+                          setMsg(t('accountPage.totpDisabledSuccess'))
+                          setDisablePassword('')
+                          void load()
+                        } catch (e: any) {
+                          setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                        }
+                      }}
+                    >
+                      {t('accountPage.disableTotp')}
                     </Button>
-                  ) : (
-                    <div className="grid gap-3 rounded-md border p-4 overflow-hidden">
-                      <p className="text-sm text-muted-foreground">{t('accountPage.totpSetupInstructions')}</p>
-
-                      {qrPng && (
-                        <img
-                          src={qrPng}
-                          width={220}
-                          className="self-center max-w-full rounded-md border"
-                          alt={t('accountPage.totpQrAlt')}
-                        />
-                      )}
-
-                      {totpSecret && (
-                        <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs break-all">
-                          <span className="flex-1">{t('accountPage.secret')}: {totpSecret}</span>
-                          <CopyButton value={totpSecret} />
-                        </div>
-                      )}
-
-                      {otpUrl && (
-                        <div className="flex items-center gap-2 rounded-md border bg-background/45 p-2 text-xs min-w-0">
-                          <span className="flex-1 truncate min-w-0">{otpUrl}</span>
-                          <CopyButton value={otpUrl} />
-                        </div>
-                      )}
-
-                      <div className="flex flex-wrap gap-2">
-                        <Input
-                          value={totpCode}
-                          onChange={(e) => setTotpCode(e.target.value)}
-                          placeholder={t('common.code')}
-                          className="flex-1 min-w-[120px]"
-                        />
-                        <Button
-                          onClick={async () => {
-                            try {
-                              await api.post('/account/totp/enable', { secret: totpSecret, code: totpCode })
-                              setMsg(t('accountPage.totpEnabledSuccess'))
-                              setShowTotpSetup(false)
-                              setTotpSecret('')
-                              setQrPng('')
-                              setOtpUrl('')
-                              setTotpCode('')
-                              void load()
-                            } catch (e: any) {
-                              setMsg(e?.response?.data?.error || t('accountPage.genericError'))
-                            }
-                          }}
-                        >
-                          {t('common.enable')}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* TOTP enabled: show disable with password */}
-              {profile.totpEnabled && (
-                <div className="flex flex-wrap gap-2">
-                  <Input
-                    type="password"
-                    value={disablePassword}
-                    onChange={(e) => setDisablePassword(e.target.value)}
-                    placeholder={t('common.password')}
-                    className="flex-1 min-w-[120px]"
-                  />
-                  <Button
-                    variant="destructive"
-                    onClick={async () => {
-                      try {
-                        await api.post('/account/totp/disable', { password: disablePassword })
-                        setMsg(t('accountPage.totpDisabledSuccess'))
-                        setDisablePassword('')
-                        void load()
-                      } catch (e: any) {
-                        setMsg(e?.response?.data?.error || t('accountPage.genericError'))
-                      }
-                    }}
-                  >
-                    {t('accountPage.disableTotp')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
       </CardContent>
     </Card>

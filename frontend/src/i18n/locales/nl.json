@@ -55,6 +55,8 @@
     "totpLabel": "Tweefactorauthenticatie",
     "totpStatusEnabled": "Ingeschakeld",
     "totpStatusDisabled": "Uitgeschakeld",
+    "tabPassword": "Wachtwoord",
+    "tabSecurity": "Beveiliging",
     "changePassword": "Wachtwoord wijzigen",
     "currentPassword": "Huidig wachtwoord",
     "passwordChanged": "Wachtwoord gewijzigd",
