@@ -5,13 +5,14 @@ interface Features {
   signupEnabled: boolean
   smsEnabled: boolean
   emailEnabled: boolean
+  usernameIsEmail: boolean
   loaded: boolean
 }
 
-const FeaturesContext = createContext<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, loaded: false })
+const FeaturesContext = createContext<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, loaded: false })
 
 export function FeaturesProvider({ children }: { children: ReactNode }) {
-  const [features, setFeatures] = useState<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, loaded: false })
+  const [features, setFeatures] = useState<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, loaded: false })
 
   useEffect(() => {
     api.get('/features').then((res) => {
@@ -19,10 +20,11 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
         signupEnabled: res.data.signupEnabled ?? true,
         smsEnabled: res.data.smsEnabled ?? false,
         emailEnabled: res.data.emailEnabled ?? false,
+        usernameIsEmail: res.data.usernameIsEmail ?? true,
         loaded: true,
       })
     }).catch(() => {
-      setFeatures({ signupEnabled: true, smsEnabled: false, emailEnabled: false, loaded: true })
+      setFeatures({ signupEnabled: true, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, loaded: true })
     })
   }, [])
 

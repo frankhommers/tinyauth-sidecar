@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"log"
 	"math/big"
+	"regexp"
 	"strings"
 	"time"
 
@@ -19,6 +20,8 @@ import (
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 type AccountService struct {
 	cfg             config.Config
@@ -46,15 +49,43 @@ func (s *AccountService) RequestPasswordReset(username string) error {
 	if err != nil {
 		return err
 	}
+
+	// If username_is_email is false, also try finding user by email
+	if !ok && !s.cfg.UsernameIsEmail {
+		foundUser, findErr := s.store.FindUserByEmail(username)
+		if findErr != nil {
+			return findErr
+		}
+		if foundUser != "" {
+			u, ok, err = s.users.Find(foundUser)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	if !ok {
 		return nil // don't leak
 	}
+
 	token := uuid.NewString()
 	exp := time.Now().Add(time.Duration(s.cfg.ResetTokenTTLSeconds) * time.Second).Unix()
 	if err := s.store.CreateResetToken(token, u.Username, exp); err != nil {
 		return err
 	}
-	return s.mail.SendResetEmail(u.Username, token)
+
+	// Determine email recipient
+	toEmail := u.Username // default: username is the email
+	if !s.cfg.UsernameIsEmail {
+		email, _ := s.store.GetEmail(u.Username)
+		if email == "" {
+			log.Printf("[reset] user %s has no email address configured", u.Username)
+			return errors.New("no email address configured")
+		}
+		toEmail = email
+	}
+
+	return s.mail.SendResetEmail(toEmail, token)
 }
 
 func (s *AccountService) ResetPassword(token, newPassword string) error {
@@ -108,6 +139,11 @@ func (s *AccountService) SignupWithPhone(username, email, password, phone string
 	if username == "" || password == "" {
 		return "", errors.New("username and password required")
 	}
+	if s.cfg.UsernameIsEmail {
+		if !emailRegex.MatchString(username) {
+			return "", errors.New("username must be a valid email address")
+		}
+	}
 	if err := s.validatePassword(password); err != nil {
 		return "", err
 	}
@@ -128,6 +164,9 @@ func (s *AccountService) SignupWithPhone(username, email, password, phone string
 		if phone != "" {
 			_ = s.store.SetPhone(username, phone)
 		}
+		if !s.cfg.UsernameIsEmail && email != "" {
+			_ = s.store.SetEmail(username, email)
+		}
 		return id, nil
 	}
 	if err := s.users.Upsert(UserRecord{Username: username, Password: hash}); err != nil {
@@ -135,6 +174,9 @@ func (s *AccountService) SignupWithPhone(username, email, password, phone string
 	}
 	if phone != "" {
 		_ = s.store.SetPhone(username, phone)
+	}
+	if !s.cfg.UsernameIsEmail && email != "" {
+		_ = s.store.SetEmail(username, email)
 	}
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, password, hash)
@@ -163,15 +205,21 @@ func (s *AccountService) Profile(username string) (map[string]any, error) {
 		return nil, errors.New("not found")
 	}
 	phone, _ := s.store.GetPhone(username)
+	email, _ := s.store.GetEmail(username)
 	return map[string]any{
 		"username":    u.Username,
 		"totpEnabled": strings.TrimSpace(u.TotpSecret) != "",
 		"phone":       phone,
+		"email":       email,
 	}, nil
 }
 
 func (s *AccountService) SetPhone(username, phone string) error {
 	return s.store.SetPhone(username, phone)
+}
+
+func (s *AccountService) SetEmail(username, email string) error {
+	return s.store.SetEmail(username, email)
 }
 
 func (s *AccountService) ChangePassword(username, oldPassword, newPassword string) error {
