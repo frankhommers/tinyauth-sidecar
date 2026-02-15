@@ -18,6 +18,7 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [msg, setMsg] = useState('')
+  const [resetRequested, setResetRequested] = useState(false)
 
   const [phone, setPhone] = useState('')
   const [smsCode, setSmsCode] = useState('')
@@ -60,45 +61,51 @@ export default function ResetPasswordPage() {
               <Label htmlFor="username">{t('resetPage.usernameOrEmail')}</Label>
               <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
             </div>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                await api.post('/password-reset/request', { username })
-                setMsg(t('resetPage.requestResetSuccess'))
-              }}
-            >
-              {t('resetPage.requestReset')}
-            </Button>
-            <Separator />
-            <div className="grid gap-2">
-              <Label htmlFor="token">{t('common.token')}</Label>
-              <Input id="token" value={token} onChange={(e) => setToken(e.target.value)} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="newPassword">{t('common.newPassword')}</Label>
-              <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              <PasswordStrengthBar password={newPassword} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
-              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-              {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-destructive">{t('accountPage.passwordMismatch')}</p>
-              )}
-            </div>
-            <Button
-              disabled={!newPassword || newPassword !== confirmPassword}
-              onClick={async () => {
-                try {
-                  await api.post('/password-reset/confirm', { token, newPassword })
-                  setMsg(t('resetPage.resetSuccess'))
-                } catch (e: any) {
-                  setMsg(e?.response?.data?.error || t('resetPage.resetError'))
-                }
-              }}
-            >
-              {t('resetPage.resetPassword')}
-            </Button>
+            {!resetRequested ? (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  await api.post('/password-reset/request', { username })
+                  setMsg(t('resetPage.requestResetSuccess'))
+                  setResetRequested(true)
+                }}
+              >
+                {t('resetPage.requestReset')}
+              </Button>
+            ) : (
+              <>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label htmlFor="token">{t('common.token')}</Label>
+                  <Input id="token" value={token} onChange={(e) => setToken(e.target.value)} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="newPassword">{t('common.newPassword')}</Label>
+                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  <PasswordStrengthBar password={newPassword} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
+                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                  {confirmPassword && newPassword !== confirmPassword && (
+                    <p className="text-xs text-destructive">{t('accountPage.passwordMismatch')}</p>
+                  )}
+                </div>
+                <Button
+                  disabled={!newPassword || newPassword !== confirmPassword}
+                  onClick={async () => {
+                    try {
+                      await api.post('/password-reset/confirm', { token, newPassword })
+                      setMsg(t('resetPage.resetSuccess'))
+                    } catch (e: any) {
+                      setMsg(e?.response?.data?.error || t('resetPage.resetError'))
+                    }
+                  }}
+                >
+                  {t('resetPage.resetPassword')}
+                </Button>
+              </>
+            )}
           </>
         )}
 
