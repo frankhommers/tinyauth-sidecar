@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation()
@@ -74,6 +75,7 @@ export default function ResetPasswordPage() {
             <div className="grid gap-2">
               <Label htmlFor="newPassword">{t('common.newPassword')}</Label>
               <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <PasswordStrengthBar password={newPassword} />
             </div>
             <Button
               onClick={async () => {
@@ -123,6 +125,7 @@ export default function ResetPasswordPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="smsNewPassword">{t('common.newPassword')}</Label>
                   <Input id="smsNewPassword" type="password" value={smsNewPassword} onChange={(e) => setSmsNewPassword(e.target.value)} />
+                  <PasswordStrengthBar password={smsNewPassword} />
                 </div>
                 <Button
                   onClick={async () => {

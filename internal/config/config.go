@@ -28,6 +28,8 @@ type Config struct {
 	TinyauthContainerName   string
 	DockerSocketPath        string
 	CORSOrigins             []string
+	MinPasswordLength       int
+	MinPasswordStrength     int
 }
 
 func Load() Config {
@@ -52,6 +54,8 @@ func Load() Config {
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
 		CORSOrigins:           parseCSV(getEnv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080")),
+		MinPasswordLength:     getEnvInt("MIN_PASSWORD_LENGTH", 8),
+		MinPasswordStrength:   getEnvInt("MIN_PASSWORD_STRENGTH", 3),
 	}
 
 	return cfg

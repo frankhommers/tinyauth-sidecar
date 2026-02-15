@@ -47,10 +47,13 @@
   },
   "accountPage": {
     "title": "Account",
-    "description": "Beheer je profiel, wachtwoord en tweestapsverificatie",
+    "description": "Beheer je profiel, wachtwoord en tweefactorauthenticatie",
     "notLoggedIn": "Niet ingelogd",
     "profile": "Profiel",
-    "totpEnabled": "Tweestapsverificatie ingeschakeld",
+    "totpEnabled": "Tweefactorauthenticatie ingeschakeld",
+    "totpLabel": "Tweefactorauthenticatie",
+    "totpStatusEnabled": "Ingeschakeld",
+    "totpStatusDisabled": "Uitgeschakeld",
     "changePassword": "Wachtwoord wijzigen",
     "currentPassword": "Huidig wachtwoord",
     "passwordChanged": "Wachtwoord gewijzigd",
@@ -59,11 +62,23 @@
     "totpSetup": "Verificatie-app instellen (Google Authenticator, Authy, etc.)",
     "generateSecret": "Geheim genereren",
     "secret": "Geheim",
-    "totpEnabledSuccess": "Tweestapsverificatie ingeschakeld",
-    "totpDisabledSuccess": "Tweestapsverificatie uitgeschakeld",
-    "enableTotp": "Tweestapsverificatie inschakelen",
-    "disableTotp": "Tweestapsverificatie uitschakelen",
+    "totpEnabledSuccess": "Tweefactorauthenticatie ingeschakeld",
+    "totpDisabledSuccess": "Tweefactorauthenticatie uitgeschakeld",
+    "enableTotp": "Tweefactorauthenticatie inschakelen",
+    "disableTotp": "Tweefactorauthenticatie uitschakelen",
     "recoveryCodes": "Herstelcodes",
-    "totpQrAlt": "QR-code voor verificatie-app"
+    "totpQrAlt": "QR-code voor verificatie-app",
+    "profileSaved": "Profiel opgeslagen",
+    "totpSectionTitle": "Tweefactorauthenticatie",
+    "totpSetupInstructions": "Scan de QR-code met je verificatie-app en voer de code in om te bevestigen."
+  },
+  "password": {
+    "tooShort": "Wachtwoord moet minimaal 8 tekens bevatten",
+    "tooWeak": "Wachtwoord is te zwak",
+    "strength0": "Zeer zwak",
+    "strength1": "Zwak",
+    "strength2": "Redelijk",
+    "strength3": "Sterk",
+    "strength4": "Zeer sterk"
   }
 }
