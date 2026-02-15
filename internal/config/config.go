@@ -33,6 +33,7 @@ type Config struct {
 	UsernameIsEmail         bool
 	EmailSubject            string
 	EmailBody               string
+	BackgroundImage         string
 }
 
 func Load() *Config {
@@ -62,6 +63,7 @@ func Load() *Config {
 		UsernameIsEmail:       getEnvBool("USERNAME_IS_EMAIL", true),
 		EmailSubject:          getEnv("EMAIL_SUBJECT", "Password reset"),
 		EmailBody:             getEnv("EMAIL_BODY", ""),
+		BackgroundImage:       getEnv("BACKGROUND_IMAGE", ""),
 	}
 
 	return cfg
@@ -131,6 +133,11 @@ type UsersConfig struct {
 	UsernameIsEmail *bool `toml:"username_is_email"`
 }
 
+// UIConfig configures UI appearance.
+type UIConfig struct {
+	BackgroundImage string `toml:"background_image"`
+}
+
 // SMTPConfig holds SMTP settings from config.toml.
 type SMTPConfig struct {
 	Host     string `toml:"host"`
@@ -154,6 +161,7 @@ type FileConfig struct {
 	Users          UsersConfig     `toml:"users"`
 	SMTP           SMTPConfig          `toml:"smtp"`
 	Email          EmailTemplateConfig `toml:"email"`
+	UI             UIConfig            `toml:"ui"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
@@ -225,6 +233,9 @@ func (c *Config) ApplyFileConfig(fc FileConfig) {
 	}
 	if fc.Email.Body != "" {
 		c.EmailBody = fc.Email.Body
+	}
+	if fc.UI.BackgroundImage != "" {
+		c.BackgroundImage = fc.UI.BackgroundImage
 	}
 }
 

@@ -102,6 +102,7 @@ func (h *PublicHandler) Features(c *gin.Context) {
 		"emailEnabled":    h.cfg.SMTPHost != "",
 		"signupEnabled":   !h.cfg.DisableSignup,
 		"usernameIsEmail": h.cfg.UsernameIsEmail,
+		"backgroundImage": h.cfg.BackgroundImage,
 	})
 }
 
