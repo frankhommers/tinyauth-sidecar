@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from './theme-toggle'
 import { LanguageSelector } from './language-toggle'
@@ -43,6 +43,10 @@ export function Layout({ children }: { children: ReactNode }) {
     window.location.href = '/'
   }
 
+  useEffect(() => {
+    if (features.title) document.title = features.title
+  }, [features.title])
+
   const navItems: NavItem[] = loggedIn
     ? [
         { label: t('nav.account'), path: '/account' },
@@ -68,6 +72,11 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
 
       <header className="relative z-10">
+        {features.title && (
+          <div className="mx-auto max-w-5xl pt-6 text-center">
+            <h1 className={cn("text-2xl font-bold drop-shadow-md", features.backgroundImage ? "text-white" : "text-foreground")}>{features.title}</h1>
+          </div>
+        )}
         <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4">
           <nav className="hidden sm:flex items-center gap-1 rounded-md border bg-card/75 p-1 backdrop-blur-md">
             {navItems.map((item) => (

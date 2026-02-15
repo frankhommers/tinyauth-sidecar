@@ -7,10 +7,11 @@ interface Features {
   emailEnabled: boolean
   usernameIsEmail: boolean
   backgroundImage: string
+  title: string
   loaded: boolean
 }
 
-const defaults: Features = { signupEnabled: false, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, backgroundImage: '', loaded: false }
+const defaults: Features = { signupEnabled: false, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, backgroundImage: '', title: '', loaded: false }
 const FeaturesContext = createContext<Features>(defaults)
 
 export function FeaturesProvider({ children }: { children: ReactNode }) {
@@ -24,6 +25,7 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
         emailEnabled: res.data.emailEnabled ?? false,
         usernameIsEmail: res.data.usernameIsEmail ?? true,
         backgroundImage: res.data.backgroundImage ?? '',
+        title: res.data.title ?? '',
         loaded: true,
       })
     }).catch(() => {
