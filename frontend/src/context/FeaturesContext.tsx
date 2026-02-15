@@ -4,23 +4,25 @@ import { api } from '../api/client'
 interface Features {
   signupEnabled: boolean
   smsEnabled: boolean
+  emailEnabled: boolean
   loaded: boolean
 }
 
-const FeaturesContext = createContext<Features>({ signupEnabled: false, smsEnabled: false, loaded: false })
+const FeaturesContext = createContext<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, loaded: false })
 
 export function FeaturesProvider({ children }: { children: ReactNode }) {
-  const [features, setFeatures] = useState<Features>({ signupEnabled: false, smsEnabled: false, loaded: false })
+  const [features, setFeatures] = useState<Features>({ signupEnabled: false, smsEnabled: false, emailEnabled: false, loaded: false })
 
   useEffect(() => {
     api.get('/features').then((res) => {
       setFeatures({
         signupEnabled: res.data.signupEnabled ?? true,
         smsEnabled: res.data.smsEnabled ?? false,
+        emailEnabled: res.data.emailEnabled ?? false,
         loaded: true,
       })
     }).catch(() => {
-      setFeatures({ signupEnabled: true, smsEnabled: false, loaded: true })
+      setFeatures({ signupEnabled: true, smsEnabled: false, emailEnabled: false, loaded: true })
     })
   }, [])
 
