@@ -157,8 +157,9 @@ func digitsOnly(s string) string {
 
 func execTmpl(name, tmplStr string, data interface{}) (string, error) {
 	tmpl, err := template.New(name).Funcs(template.FuncMap{
-		"jsonEscape": jsonEscape,
-		"digitsOnly": digitsOnly,
+		"jsonEscape":          jsonEscape,
+		"digitsOnly":          digitsOnly,
+		"replace": strings.ReplaceAll,
 	}).Parse(tmplStr)
 	if err != nil {
 		return "", err
