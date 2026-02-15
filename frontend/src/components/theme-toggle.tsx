@@ -2,37 +2,40 @@ import { Moon, Sun, Monitor } from 'lucide-react'
 import { useTheme } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
 
-const modes = ['light', 'dark', 'system'] as const
+const modes = [
+  { value: 'system', Icon: Monitor },
+  { value: 'light', Icon: Sun },
+  { value: 'dark', Icon: Moon },
+] as const
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
-  const currentIndex = modes.indexOf(theme)
-  const next = () => setTheme(modes[(currentIndex + 1) % modes.length])
-
-  // Resolve effective appearance for styling
-  const effectiveDark =
-    theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-  const Icon = theme === 'system' ? Monitor : theme === 'dark' ? Moon : Sun
-  const label = theme === 'system' ? 'System' : theme === 'dark' ? 'Dark' : 'Light'
-
   return (
-    <button
-      type="button"
-      aria-label={`Theme: ${label}. Click to change.`}
-      onClick={next}
+    <div
       className={cn(
-        'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors',
-        'bg-card/75 border-border backdrop-blur-md',
-        'hover:bg-accent hover:text-accent-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        effectiveDark ? 'text-foreground' : 'text-foreground'
+        'inline-flex h-9 items-center rounded-full border p-1 gap-0.5',
+        'bg-card/75 border-border backdrop-blur-md'
       )}
     >
-      <Icon className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">{label}</span>
-    </button>
+      {modes.map(({ value, Icon }) => (
+        <button
+          key={value}
+          type="button"
+          aria-label={value}
+          aria-pressed={theme === value}
+          onClick={() => setTheme(value)}
+          className={cn(
+            'inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            theme === value
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </button>
+      ))}
+    </div>
   )
 }
