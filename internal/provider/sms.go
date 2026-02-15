@@ -177,7 +177,9 @@ func (p *WebhookSMSProvider) SendSMS(to, message string) error {
 }
 
 func executeSMSTemplate(name, tmplStr string, data map[string]string) (string, error) {
-	tmpl, err := template.New(name).Parse(tmplStr)
+	tmpl, err := template.New(name).Funcs(template.FuncMap{
+		"jsonEscape": jsonEscape,
+	}).Parse(tmplStr)
 	if err != nil {
 		return "", err
 	}
