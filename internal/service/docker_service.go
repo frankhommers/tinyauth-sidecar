@@ -10,9 +10,9 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type DockerService struct{ cfg config.Config }
+type DockerService struct{ cfg *config.Config }
 
-func NewDockerService(cfg config.Config) *DockerService { return &DockerService{cfg: cfg} }
+func NewDockerService(cfg *config.Config) *DockerService { return &DockerService{cfg: cfg} }
 
 // RestartTinyauth kills the tinyauth container with SIGTERM after a short delay.
 // The delay ensures the API response is sent back to the user first.

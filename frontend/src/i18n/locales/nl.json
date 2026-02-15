@@ -89,7 +89,9 @@
     "testEmail": "Test email versturen",
     "testSms": "Test SMS versturen",
     "testSuccess": "Verstuurd!",
-    "testFailed": "Versturen mislukt"
+    "testFailed": "Versturen mislukt",
+    "reloadConfig": "Configuratie herladen",
+    "reloadSuccess": "Configuratie herladen"
   },
   "password": {
     "tooShort": "Wachtwoord moet minimaal 8 tekens bevatten",

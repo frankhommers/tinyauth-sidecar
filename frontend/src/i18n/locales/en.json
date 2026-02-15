@@ -89,7 +89,9 @@
     "testEmail": "Send test email",
     "testSms": "Send test SMS",
     "testSuccess": "Sent!",
-    "testFailed": "Failed to send"
+    "testFailed": "Failed to send",
+    "reloadConfig": "Reload configuration",
+    "reloadSuccess": "Configuration reloaded"
   },
   "password": {
     "tooShort": "Password must be at least 8 characters",

@@ -34,35 +34,8 @@ func main() {
 	// Initialize providers
 	fileCfg := config.LoadFileConfig()
 
-	// Password policy: config.toml takes precedence over env vars
-	if fileCfg.PasswordPolicy.MinLength > 0 {
-		cfg.MinPasswordLength = fileCfg.PasswordPolicy.MinLength
-	}
-	if fileCfg.PasswordPolicy.MinStrength > 0 {
-		cfg.MinPasswordStrength = fileCfg.PasswordPolicy.MinStrength
-	}
-
-	// Username is email: config.toml takes precedence over env var
-	if fileCfg.Users.UsernameIsEmail != nil {
-		cfg.UsernameIsEmail = *fileCfg.Users.UsernameIsEmail
-	}
-
-	// SMTP: config.toml takes precedence over env vars (only override non-empty fields)
-	if fileCfg.SMTP.Host != "" {
-		cfg.SMTPHost = fileCfg.SMTP.Host
-	}
-	if fileCfg.SMTP.Port > 0 {
-		cfg.SMTPPort = fileCfg.SMTP.Port
-	}
-	if fileCfg.SMTP.Username != "" {
-		cfg.SMTPUsername = fileCfg.SMTP.Username
-	}
-	if fileCfg.SMTP.Password != "" {
-		cfg.SMTPPassword = fileCfg.SMTP.Password
-	}
-	if fileCfg.SMTP.From != "" {
-		cfg.SMTPFrom = fileCfg.SMTP.From
-	}
+	// Apply config.toml overrides (SMTP, password policy, users settings)
+	cfg.ApplyFileConfig(fileCfg)
 
 	passwordTargets := provider.NewPasswordTargetProvider()
 	var passwordHooks []provider.PasswordChangeHook

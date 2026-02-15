@@ -24,7 +24,7 @@ import (
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 type AccountService struct {
-	cfg             config.Config
+	cfg             *config.Config
 	store           *store.Store
 	users           *UserFileService
 	mail            *MailService
@@ -34,7 +34,7 @@ type AccountService struct {
 	sms             provider.SMSProvider
 }
 
-func NewAccountService(cfg config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider, passwordHooks ...provider.PasswordChangeHook) *AccountService {
+func NewAccountService(cfg *config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider, passwordHooks ...provider.PasswordChangeHook) *AccountService {
 	var hooks []provider.PasswordChangeHook
 	for _, h := range passwordHooks {
 		if h != nil {

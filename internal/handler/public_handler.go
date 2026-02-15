@@ -12,10 +12,10 @@ import (
 
 type PublicHandler struct {
 	account *service.AccountService
-	cfg     config.Config
+	cfg     *config.Config
 }
 
-func NewPublicHandler(account *service.AccountService, cfg config.Config) *PublicHandler {
+func NewPublicHandler(account *service.AccountService, cfg *config.Config) *PublicHandler {
 	return &PublicHandler{account: account, cfg: cfg}
 }
 

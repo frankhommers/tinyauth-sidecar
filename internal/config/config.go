@@ -33,10 +33,10 @@ type Config struct {
 	UsernameIsEmail         bool
 }
 
-func Load() Config {
+func Load() *Config {
 	baseURL := strings.TrimRight(getEnv("TINYAUTH_BASEURL", "http://tinyauth:3000"), "/")
 
-	cfg := Config{
+	cfg := &Config{
 		Port:                  getEnv("PORT", "8080"),
 		UsersFilePath:         getEnv("USERS_FILE_PATH", "/data/users.txt"),
 		ResetTokenTTLSeconds:  getEnvInt64("RESET_TOKEN_TTL_SECONDS", 3600),
@@ -179,6 +179,35 @@ func applyWebhookDefaults(wc *WebhookConfig, method, contentType string, timeout
 	}
 	if wc.Timeout <= 0 {
 		wc.Timeout = timeout
+	}
+}
+
+// ApplyFileConfig applies FileConfig overrides onto the running Config.
+// Only non-zero values override; env vars remain as fallback.
+func (c *Config) ApplyFileConfig(fc FileConfig) {
+	if fc.PasswordPolicy.MinLength > 0 {
+		c.MinPasswordLength = fc.PasswordPolicy.MinLength
+	}
+	if fc.PasswordPolicy.MinStrength > 0 {
+		c.MinPasswordStrength = fc.PasswordPolicy.MinStrength
+	}
+	if fc.Users.UsernameIsEmail != nil {
+		c.UsernameIsEmail = *fc.Users.UsernameIsEmail
+	}
+	if fc.SMTP.Host != "" {
+		c.SMTPHost = fc.SMTP.Host
+	}
+	if fc.SMTP.Port > 0 {
+		c.SMTPPort = fc.SMTP.Port
+	}
+	if fc.SMTP.Username != "" {
+		c.SMTPUsername = fc.SMTP.Username
+	}
+	if fc.SMTP.Password != "" {
+		c.SMTPPassword = fc.SMTP.Password
+	}
+	if fc.SMTP.From != "" {
+		c.SMTPFrom = fc.SMTP.From
 	}
 }
 

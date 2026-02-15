@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/smtp"
 
@@ -15,13 +16,13 @@ import (
 )
 
 type AdminHandler struct {
-	cfg      config.Config
+	cfg      *config.Config
 	sms      provider.SMSProvider
 	usersSvc *service.UserFileService
 	store    *store.Store
 }
 
-func NewAdminHandler(cfg config.Config, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
+func NewAdminHandler(cfg *config.Config, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
 	return &AdminHandler{cfg: cfg, sms: sms, usersSvc: usersSvc, store: st}
 }
 
@@ -53,6 +54,7 @@ func (h *AdminHandler) Register(r *gin.RouterGroup) {
 	admin.POST("/admin/test-email", h.TestEmail)
 	admin.POST("/admin/test-sms", h.TestSMS)
 	admin.GET("/admin/status", h.Status)
+	admin.POST("/admin/reload-config", h.ReloadConfig)
 }
 
 func (h *AdminHandler) TestEmail(c *gin.Context) {
@@ -116,4 +118,11 @@ func (h *AdminHandler) Status(c *gin.Context) {
 		"usernameIsEmail": h.cfg.UsernameIsEmail,
 		"userCount":       userCount,
 	})
+}
+
+func (h *AdminHandler) ReloadConfig(c *gin.Context) {
+	fileCfg := config.LoadFileConfig()
+	h.cfg.ApplyFileConfig(fileCfg)
+	log.Printf("[admin] config.toml reloaded by %s", username(c))
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

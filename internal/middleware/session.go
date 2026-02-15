@@ -10,7 +10,7 @@ import (
 
 // SessionMiddleware validates requests by forwarding cookies to tinyauth's
 // forwardauth endpoint on every request. No caching.
-func SessionMiddleware(cfg config.Config) gin.HandlerFunc {
+func SessionMiddleware(cfg *config.Config) gin.HandlerFunc {
 	verifyURL := cfg.TinyauthVerifyURL
 
 	return func(c *gin.Context) {
