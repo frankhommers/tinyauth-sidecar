@@ -33,6 +33,15 @@ func main() {
 
 	// Initialize providers
 	fileCfg := config.LoadFileConfig()
+
+	// Password policy: config.toml takes precedence over env vars
+	if fileCfg.PasswordPolicy.MinLength > 0 {
+		cfg.MinPasswordLength = fileCfg.PasswordPolicy.MinLength
+	}
+	if fileCfg.PasswordPolicy.MinStrength > 0 {
+		cfg.MinPasswordStrength = fileCfg.PasswordPolicy.MinStrength
+	}
+
 	passwordTargets := provider.NewPasswordTargetProvider()
 	var passwordHooks []provider.PasswordChangeHook
 	for _, hookCfg := range fileCfg.PasswordHooks {
