@@ -16,6 +16,7 @@ type Profile = {
   totpEnabled: boolean
   phone?: string
   email?: string
+  role?: string
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -80,8 +81,14 @@ export default function AccountPage() {
 
   useEffect(() => {
     void load()
-    api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
   }, [])
+
+  // Load admin status when profile indicates admin role
+  useEffect(() => {
+    if (profile?.role === 'admin') {
+      api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
+    }
+  }, [profile?.role])
 
   const startTotpSetup = async () => {
     setTotpLoading(true)
@@ -122,10 +129,12 @@ export default function AccountPage() {
                 <Shield className="h-3.5 w-3.5" />
                 {t('accountPage.tabSecurity')}
               </TabsTrigger>
-              <TabsTrigger value="admin" className="gap-1.5">
-                <Settings className="h-3.5 w-3.5" />
-                {t('accountPage.tabAdmin')}
-              </TabsTrigger>
+              {profile.role === 'admin' && (
+                <TabsTrigger value="admin" className="gap-1.5">
+                  <Settings className="h-3.5 w-3.5" />
+                  {t('accountPage.tabAdmin')}
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Tab: Profile */}
@@ -340,7 +349,8 @@ export default function AccountPage() {
               </div>
             </TabsContent>
 
-            {/* Tab: Admin */}
+            {/* Tab: Admin (admin only) */}
+            {profile.role === 'admin' && (
             <TabsContent value="admin">
               <div className="grid gap-4">
                 {adminStatus && (
@@ -424,6 +434,7 @@ export default function AccountPage() {
                 )}
               </div>
             </TabsContent>
+            )}
           </Tabs>
         )}
       </CardContent>

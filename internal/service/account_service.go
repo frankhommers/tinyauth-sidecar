@@ -206,11 +206,16 @@ func (s *AccountService) Profile(username string) (map[string]any, error) {
 	}
 	phone, _ := s.store.GetPhone(username)
 	email, _ := s.store.GetEmail(username)
+	role := ""
+	if meta := s.store.GetUserMeta(username); meta != nil {
+		role = meta.Role
+	}
 	return map[string]any{
 		"username":    u.Username,
 		"totpEnabled": strings.TrimSpace(u.TotpSecret) != "",
 		"phone":       phone,
 		"email":       email,
+		"role":        role,
 	}, nil
 }
 

@@ -8,6 +8,7 @@ import (
 	"tinyauth-usermanagement/internal/config"
 	"tinyauth-usermanagement/internal/provider"
 	"tinyauth-usermanagement/internal/service"
+	"tinyauth-usermanagement/internal/store"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jordan-wright/email"
@@ -17,16 +18,41 @@ type AdminHandler struct {
 	cfg      config.Config
 	sms      provider.SMSProvider
 	usersSvc *service.UserFileService
+	store    *store.Store
 }
 
-func NewAdminHandler(cfg config.Config, sms provider.SMSProvider, usersSvc *service.UserFileService) *AdminHandler {
-	return &AdminHandler{cfg: cfg, sms: sms, usersSvc: usersSvc}
+func NewAdminHandler(cfg config.Config, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
+	return &AdminHandler{cfg: cfg, sms: sms, usersSvc: usersSvc, store: st}
+}
+
+// isAdmin checks whether the authenticated user has role "admin".
+func (h *AdminHandler) isAdmin(c *gin.Context) bool {
+	u, _ := c.Get("username")
+	username, _ := u.(string)
+	if username == "" {
+		return false
+	}
+	meta := h.store.GetUserMeta(username)
+	return meta != nil && meta.Role == "admin"
+}
+
+// requireAdmin is middleware that returns 403 if the user is not an admin.
+func (h *AdminHandler) requireAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !h.isAdmin(c) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "admin access required"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }
 
 func (h *AdminHandler) Register(r *gin.RouterGroup) {
-	r.POST("/admin/test-email", h.TestEmail)
-	r.POST("/admin/test-sms", h.TestSMS)
-	r.GET("/admin/status", h.Status)
+	admin := r.Group("", h.requireAdmin())
+	admin.POST("/admin/test-email", h.TestEmail)
+	admin.POST("/admin/test-sms", h.TestSMS)
+	admin.GET("/admin/status", h.Status)
 }
 
 func (h *AdminHandler) TestEmail(c *gin.Context) {

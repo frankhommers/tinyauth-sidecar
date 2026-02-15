@@ -122,7 +122,7 @@ func main() {
 		accountHandler.Register(authed)
 
 		// Admin endpoints
-		adminHandler := handler.NewAdminHandler(cfg, smsProvider, usersSvc)
+		adminHandler := handler.NewAdminHandler(cfg, smsProvider, usersSvc, st)
 		adminHandler.Register(authed)
 	}
 
