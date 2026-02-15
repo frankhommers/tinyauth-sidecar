@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { AnimatedHeight } from '@/components/AnimatedHeight'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -113,6 +114,7 @@ export default function AccountPage() {
         <CardDescription className="text-center">{t('accountPage.description')}</CardDescription>
       </CardHeader>
       <CardContent>
+        <AnimatedHeight>
         {msg && <div className="mb-4 rounded-md border bg-muted px-3 py-2 text-sm">{msg}</div>}
 
         {profile && (
@@ -460,6 +462,7 @@ export default function AccountPage() {
             )}
           </Tabs>
         )}
+        </AnimatedHeight>
       </CardContent>
     </Card>
   )
