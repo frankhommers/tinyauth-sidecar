@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"text/template"
+	"strings"
 	"time"
 
 	"tinyauth-usermanagement/internal/config"
@@ -178,8 +179,9 @@ func (p *WebhookSMSProvider) SendSMS(to, message string) error {
 
 func executeSMSTemplate(name, tmplStr string, data map[string]string) (string, error) {
 	tmpl, err := template.New(name).Funcs(template.FuncMap{
-		"jsonEscape": jsonEscape,
-		"digitsOnly": digitsOnly,
+		"jsonEscape":          jsonEscape,
+		"digitsOnly":          digitsOnly,
+		"replace": strings.ReplaceAll,
 	}).Parse(tmplStr)
 	if err != nil {
 		return "", err
