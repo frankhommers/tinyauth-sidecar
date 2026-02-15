@@ -69,6 +69,8 @@ export default function AccountPage() {
   const [testEmailMsg, setTestEmailMsg] = useState('')
   const [testSmsMsg, setTestSmsMsg] = useState('')
   const [reloadMsg, setReloadMsg] = useState('')
+  const [tinyauthUp, setTinyauthUp] = useState<boolean | null>(null)
+  const [restarting, setRestarting] = useState(false)
 
   const load = async () => {
     try {
@@ -89,8 +91,26 @@ export default function AccountPage() {
   useEffect(() => {
     if (profile?.role === 'admin') {
       api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
+      api.get('/admin/tinyauth-health').then((res) => setTinyauthUp(res.data.running)).catch(() => setTinyauthUp(false))
     }
   }, [profile?.role])
+
+  // Poll tinyauth health while restarting
+  useEffect(() => {
+    if (!restarting) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get('/admin/tinyauth-health')
+        if (res.data.running) {
+          setTinyauthUp(true)
+          setRestarting(false)
+        }
+      } catch {
+        setTinyauthUp(false)
+      }
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [restarting])
 
   const startTotpSetup = async () => {
     setTotpLoading(true)
@@ -377,6 +397,16 @@ export default function AccountPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {tinyauthUp === true ? (
+                        <><CheckCircle className="h-4 w-4 text-green-500" /><span>{t('accountPage.tinyauthUp')}</span></>
+                      ) : tinyauthUp === false ? (
+                        <><XCircle className="h-4 w-4 text-red-500" /><span>{restarting ? t('accountPage.tinyauthRestarting') : t('accountPage.tinyauthDown')}</span></>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">…</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Button
                         variant="outline"
                         className="gap-1.5"
@@ -385,15 +415,32 @@ export default function AccountPage() {
                           try {
                             await api.post('/admin/reload-config')
                             setReloadMsg(t('accountPage.reloadSuccess'))
-                            // Refresh admin status after reload
                             api.get('/admin/status').then((res) => setAdminStatus(res.data)).catch(() => {})
                           } catch (e: any) {
-                            setReloadMsg(t('accountPage.testFailed') + ': ' + (e?.response?.data?.error || ''))
+                            setReloadMsg(t('accountPage.reloadFailed') + ': ' + (e?.response?.data?.error || ''))
                           }
                         }}
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                         {t('accountPage.reloadConfig')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="gap-1.5"
+                        disabled={restarting}
+                        onClick={async () => {
+                          try {
+                            setRestarting(true)
+                            setTinyauthUp(false)
+                            await api.post('/admin/restart-tinyauth')
+                          } catch (e: any) {
+                            setRestarting(false)
+                            setReloadMsg(t('accountPage.restartFailed') + ': ' + (e?.response?.data?.error || ''))
+                          }
+                        }}
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${restarting ? 'animate-spin' : ''}`} />
+                        {t('accountPage.restartTinyauth')}
                       </Button>
                       {reloadMsg && <span className="text-sm">{reloadMsg}</span>}
                     </div>

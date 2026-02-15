@@ -91,7 +91,13 @@
     "testSuccess": "Sent!",
     "testFailed": "Failed to send",
     "reloadConfig": "Reload configuration",
-    "reloadSuccess": "Configuration reloaded"
+    "reloadSuccess": "Configuration reloaded",
+    "reloadFailed": "Reload failed",
+    "restartTinyauth": "Restart TinyAuth",
+    "restartFailed": "Restart failed",
+    "tinyauthUp": "TinyAuth is running",
+    "tinyauthDown": "TinyAuth is not reachable",
+    "tinyauthRestarting": "TinyAuth restarting…"
   },
   "password": {
     "tooShort": "Password must be at least 8 characters",
