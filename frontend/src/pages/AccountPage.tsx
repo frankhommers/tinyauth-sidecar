@@ -9,10 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
 import { Copy, Check, ShieldCheck, ShieldAlert, User, Lock, Shield } from 'lucide-react'
 
+import { useFeatures } from '@/context/FeaturesContext'
+
 type Profile = {
   username: string
   totpEnabled: boolean
   phone?: string
+  email?: string
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -35,11 +38,13 @@ function CopyButton({ value }: { value: string }) {
 
 export default function AccountPage() {
   const { t } = useTranslation()
+  const features = useFeatures()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [msg, setMsg] = useState('')
 
   // Profile fields
   const [phone, setPhone] = useState('')
+  const [profileEmail, setProfileEmail] = useState('')
 
   // Password fields
   const [oldPassword, setOldPassword] = useState('')
@@ -60,6 +65,7 @@ export default function AccountPage() {
       const data = (await api.get('/account/profile')).data
       setProfile(data)
       setPhone(data.phone || '')
+      setProfileEmail(data.email || '')
     } catch {
       setProfile(null)
     }
@@ -140,6 +146,34 @@ export default function AccountPage() {
                 >
                   {t('common.save')}
                 </Button>
+                {!features.usernameIsEmail && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="profileEmail">{t('accountPage.emailLabel')}</Label>
+                      <Input
+                        id="profileEmail"
+                        type="email"
+                        value={profileEmail}
+                        onChange={(e) => setProfileEmail(e.target.value)}
+                        placeholder="user@example.com"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          await api.post('/account/email', { email: profileEmail })
+                          setMsg(t('accountPage.emailUpdated'))
+                          void load()
+                        } catch (e: any) {
+                          setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                        }
+                      }}
+                    >
+                      {t('common.save')}
+                    </Button>
+                  </>
+                )}
               </div>
             </TabsContent>
 

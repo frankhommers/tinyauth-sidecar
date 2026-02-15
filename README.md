@@ -58,8 +58,9 @@ sudo docker compose up -d
 | `DOCKER_SOCKET_PATH` | `/var/run/docker.sock` | Docker socket path |
 | `DISABLE_SIGNUP` | `true` | Disable signup (hides UI + blocks API) |
 | `SIGNUP_REQUIRE_APPROVAL` | `false` | Require admin approval for signups |
+| `USERNAME_IS_EMAIL` | `true` | When true, username must be a valid email address. When false, a separate email field is available |
 | `TOTP_ISSUER` | `tinyauth` | Issuer name in authenticator apps |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | — | Email for password resets |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | — | Email for password resets (see Email setup) |
 | `MAIL_BASE_URL` | `http://localhost:8080` | Base URL in reset emails |
 | `RESET_TOKEN_TTL_SECONDS` | `3600` | Password reset token validity |
 | `CONFIG_PATH` | `/data/config.toml` | Webhook config file path |
@@ -68,6 +69,18 @@ sudo docker compose up -d
 ## Webhook configuration (`config.toml`)
 
 Password sync and SMS webhooks are configured via a TOML file. See [`config.example.toml`](config.example.toml).
+
+### Users configuration
+
+```toml
+[users]
+username_is_email = true   # default: true; set to false for separate username + email
+```
+
+When `username_is_email = false`:
+- Users have a separate email field in their profile
+- Password reset looks up users by username OR email
+- Reset emails are sent to the email field (not the username)
 
 ### Password change hooks (multiple supported)
 
@@ -121,15 +134,29 @@ All routes under `/manage/api/`.
 - `GET  /account/profile`
 - `POST /account/change-password`
 - `POST /account/phone`
+- `POST /account/email`
 - `POST /account/totp/setup`
 - `POST /account/totp/enable`
 - `POST /account/totp/disable`
 - `POST /account/totp/recover`
+
+## Email setup
+
+To enable email-based password resets, configure these environment variables:
+
+```yaml
+SMTP_HOST: smtp.example.com
+SMTP_PORT: 587                    # default: 587
+SMTP_USERNAME: noreply@example.com
+SMTP_PASSWORD: your-smtp-password
+SMTP_FROM: noreply@example.com
+MAIL_BASE_URL: https://auth.example.com/manage  # base URL used in reset links
+```
 
 ## Tinyauth config tip
 
 Add a link to usermanagement's reset page in tinyauth's forgot password message:
 
 ```
-TINYAUTH_UI_FORGOTPASSWORDMESSAGE='<a href="https://auth.example.com/manage/reset-password">Forgot your password?</a>'
+FORGOT_PASSWORD_MESSAGE='<a href="https://auth.example.com/manage/reset-password">Forgot your password?</a>'
 ```

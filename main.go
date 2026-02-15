@@ -42,6 +42,11 @@ func main() {
 		cfg.MinPasswordStrength = fileCfg.PasswordPolicy.MinStrength
 	}
 
+	// Username is email: config.toml takes precedence over env var
+	if fileCfg.Users.UsernameIsEmail != nil {
+		cfg.UsernameIsEmail = *fileCfg.Users.UsernameIsEmail
+	}
+
 	passwordTargets := provider.NewPasswordTargetProvider()
 	var passwordHooks []provider.PasswordChangeHook
 	for _, hookCfg := range fileCfg.PasswordHooks {

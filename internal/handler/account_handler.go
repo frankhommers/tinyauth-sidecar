@@ -17,6 +17,7 @@ func (h *AccountHandler) Register(r *gin.RouterGroup) {
 	r.GET("/account/profile", h.Profile)
 	r.POST("/account/change-password", h.ChangePassword)
 	r.POST("/account/phone", h.UpdatePhone)
+	r.POST("/account/email", h.UpdateEmail)
 	r.POST("/account/totp/setup", h.TotpSetup)
 	r.POST("/account/totp/enable", h.TotpEnable)
 	r.POST("/account/totp/disable", h.TotpDisable)
@@ -63,6 +64,21 @@ func (h *AccountHandler) UpdatePhone(c *gin.Context) {
 		return
 	}
 	if err := h.account.SetPhone(username(c), req.Phone); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *AccountHandler) UpdateEmail(c *gin.Context) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.account.SetEmail(username(c), req.Email); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

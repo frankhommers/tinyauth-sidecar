@@ -16,6 +16,7 @@ type UserMeta struct {
 	Name     string `toml:"name,omitempty"`
 	Role     string `toml:"role,omitempty"`
 	Phone    string `toml:"phone,omitempty"`
+	Email    string `toml:"email,omitempty"`
 	Approved bool   `toml:"approved,omitempty"`
 }
 
@@ -176,6 +177,45 @@ func (s *Store) SetUserMeta(username string, meta *UserMeta) error {
 
 	s.users[username] = meta
 	return s.saveTOML()
+}
+
+// SetEmail sets the email address for a user.
+func (s *Store) SetEmail(username, email string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	meta, ok := s.users[username]
+	if !ok {
+		meta = &UserMeta{}
+		s.users[username] = meta
+	}
+	meta.Email = email
+	return s.saveTOML()
+}
+
+// GetEmail retrieves the email address for a user.
+func (s *Store) GetEmail(username string) (string, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	meta, ok := s.users[username]
+	if !ok {
+		return "", nil
+	}
+	return meta.Email, nil
+}
+
+// FindUserByEmail returns the username for a given email address.
+func (s *Store) FindUserByEmail(email string) (string, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for username, meta := range s.users {
+		if meta.Email == email {
+			return username, nil
+		}
+	}
+	return "", nil
 }
 
 // ---------- Reset tokens (in-memory) ----------

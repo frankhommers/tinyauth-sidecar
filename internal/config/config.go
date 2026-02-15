@@ -30,6 +30,7 @@ type Config struct {
 	CORSOrigins             []string
 	MinPasswordLength       int
 	MinPasswordStrength     int
+	UsernameIsEmail         bool
 }
 
 func Load() Config {
@@ -56,6 +57,7 @@ func Load() Config {
 		CORSOrigins:           parseCSV(getEnv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080")),
 		MinPasswordLength:     getEnvInt("MIN_PASSWORD_LENGTH", 8),
 		MinPasswordStrength:   getEnvInt("MIN_PASSWORD_STRENGTH", 3),
+		UsernameIsEmail:       getEnvBool("USERNAME_IS_EMAIL", true),
 	}
 
 	return cfg
@@ -120,11 +122,17 @@ type PasswordPolicy struct {
 	MinStrength int `toml:"min_strength"`
 }
 
+// UsersConfig configures user-related behaviour.
+type UsersConfig struct {
+	UsernameIsEmail *bool `toml:"username_is_email"`
+}
+
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
 	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
 	PasswordHooks  []WebhookConfig `toml:"password_hooks"`
 	SMS            WebhookConfig   `toml:"sms"`
+	Users          UsersConfig     `toml:"users"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).

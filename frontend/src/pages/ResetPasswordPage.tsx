@@ -65,7 +65,7 @@ export default function ResetPasswordPage() {
           <>
             {msg && <div className="rounded-md border bg-muted px-3 py-2 text-sm">{msg}</div>}
             <div className="grid gap-2">
-              <Label htmlFor="username">{t('resetPage.usernameOrEmail')}</Label>
+              <Label htmlFor="username">{features.usernameIsEmail ? t('resetPage.emailAddressLabel') : t('resetPage.usernameOrEmailLabel')}</Label>
               <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
             </div>
             {!resetRequested ? (
