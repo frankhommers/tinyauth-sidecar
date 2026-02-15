@@ -44,6 +44,7 @@ export default function AccountPage() {
   // Password fields
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   // TOTP fields
   const [totpSecret, setTotpSecret] = useState('')
@@ -143,13 +144,22 @@ export default function AccountPage() {
                   <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                   <PasswordStrengthBar password={newPassword} />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
+                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                  {confirmPassword && newPassword !== confirmPassword && (
+                    <p className="text-xs text-destructive">{t('accountPage.passwordMismatch')}</p>
+                  )}
+                </div>
                 <Button
+                  disabled={!newPassword || newPassword !== confirmPassword}
                   onClick={async () => {
                     try {
                       await api.post('/account/change-password', { oldPassword, newPassword })
                       setMsg(t('accountPage.passwordChanged'))
                       setOldPassword('')
                       setNewPassword('')
+                      setConfirmPassword('')
                     } catch (e: any) {
                       setMsg(e?.response?.data?.error || t('accountPage.genericError'))
                     }

@@ -16,11 +16,13 @@ export default function ResetPasswordPage() {
   const [username, setUsername] = useState('')
   const [token, setToken] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [msg, setMsg] = useState('')
 
   const [phone, setPhone] = useState('')
   const [smsCode, setSmsCode] = useState('')
   const [smsNewPassword, setSmsNewPassword] = useState('')
+  const [smsConfirmPassword, setSmsConfirmPassword] = useState('')
   const [smsMsg, setSmsMsg] = useState('')
   const [codeSent, setCodeSent] = useState(false)
 
@@ -77,7 +79,15 @@ export default function ResetPasswordPage() {
               <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               <PasswordStrengthBar password={newPassword} />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
+              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              {confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive">{t('accountPage.passwordMismatch')}</p>
+              )}
+            </div>
             <Button
+              disabled={!newPassword || newPassword !== confirmPassword}
               onClick={async () => {
                 try {
                   await api.post('/password-reset/confirm', { token, newPassword })
@@ -127,7 +137,15 @@ export default function ResetPasswordPage() {
                   <Input id="smsNewPassword" type="password" value={smsNewPassword} onChange={(e) => setSmsNewPassword(e.target.value)} />
                   <PasswordStrengthBar password={smsNewPassword} />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="smsConfirmPassword">{t('common.confirmPassword')}</Label>
+                  <Input id="smsConfirmPassword" type="password" value={smsConfirmPassword} onChange={(e) => setSmsConfirmPassword(e.target.value)} />
+                  {smsConfirmPassword && smsNewPassword !== smsConfirmPassword && (
+                    <p className="text-xs text-destructive">{t('accountPage.passwordMismatch')}</p>
+                  )}
+                </div>
                 <Button
+                  disabled={!smsNewPassword || smsNewPassword !== smsConfirmPassword}
                   onClick={async () => {
                     try {
                       await api.post('/auth/reset-password-sms', { phone, code: smsCode, newPassword: smsNewPassword })
