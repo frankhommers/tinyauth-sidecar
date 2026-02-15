@@ -144,9 +144,21 @@ func jsonEscape(s string) string {
 	return string(b[1 : len(b)-1])
 }
 
+// digitsOnly strips everything except digits from a string.
+func digitsOnly(s string) string {
+	var buf bytes.Buffer
+	for _, r := range s {
+		if r >= '0' && r <= '9' {
+			buf.WriteRune(r)
+		}
+	}
+	return buf.String()
+}
+
 func execTmpl(name, tmplStr string, data interface{}) (string, error) {
 	tmpl, err := template.New(name).Funcs(template.FuncMap{
 		"jsonEscape": jsonEscape,
+		"digitsOnly": digitsOnly,
 	}).Parse(tmplStr)
 	if err != nil {
 		return "", err
