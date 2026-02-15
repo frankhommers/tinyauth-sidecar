@@ -1,10 +1,8 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"net/smtp"
 
 	"tinyauth-usermanagement/internal/config"
 	"tinyauth-usermanagement/internal/provider"
@@ -12,18 +10,18 @@ import (
 	"tinyauth-usermanagement/internal/store"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jordan-wright/email"
 )
 
 type AdminHandler struct {
 	cfg      *config.Config
+	mail     *service.MailService
 	sms      provider.SMSProvider
 	usersSvc *service.UserFileService
 	store    *store.Store
 }
 
-func NewAdminHandler(cfg *config.Config, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
-	return &AdminHandler{cfg: cfg, sms: sms, usersSvc: usersSvc, store: st}
+func NewAdminHandler(cfg *config.Config, mail *service.MailService, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store) *AdminHandler {
+	return &AdminHandler{cfg: cfg, mail: mail, sms: sms, usersSvc: usersSvc, store: st}
 }
 
 // isAdmin checks whether the authenticated user has role "admin".
@@ -66,19 +64,7 @@ func (h *AdminHandler) TestEmail(c *gin.Context) {
 		return
 	}
 
-	if h.cfg.SMTPHost == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "SMTP not configured"})
-		return
-	}
-
-	e := email.NewEmail()
-	e.From = h.cfg.SMTPFrom
-	e.To = []string{req.To}
-	e.Subject = "TinyAuth Test Email"
-	e.Text = []byte("This is a test email from TinyAuth User Management.")
-	addr := fmt.Sprintf("%s:%d", h.cfg.SMTPHost, h.cfg.SMTPPort)
-	auth := smtp.PlainAuth("", h.cfg.SMTPUsername, h.cfg.SMTPPassword, h.cfg.SMTPHost)
-	if err := e.Send(addr, auth); err != nil {
+	if err := h.mail.SendTestEmail(req.To); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
