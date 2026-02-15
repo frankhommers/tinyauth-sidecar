@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from 'react'
 import { Moon, Sun, Monitor } from 'lucide-react'
 import { useTheme } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
@@ -10,19 +11,30 @@ const modes = [
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [offset, setOffset] = useState(0)
   const activeIndex = modes.findIndex((m) => m.value === theme)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const buttons = containerRef.current.querySelectorAll<HTMLButtonElement>('button')
+    if (buttons[activeIndex]) {
+      setOffset(buttons[activeIndex].offsetLeft - containerRef.current.offsetLeft)
+    }
+  }, [activeIndex])
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        'relative inline-flex h-9 items-center rounded-full border p-1',
+        'relative inline-flex h-9 items-center rounded-full border p-1 gap-0.5',
         'bg-card/75 border-border backdrop-blur-md'
       )}
     >
       {/* Sliding indicator */}
       <div
-        className="absolute h-7 w-7 rounded-full bg-primary shadow-sm transition-transform duration-300 ease-in-out"
-        style={{ transform: `translateX(${activeIndex * 30}px)` }}
+        className="absolute h-7 w-7 rounded-full bg-primary shadow-sm transition-all duration-300 ease-in-out"
+        style={{ left: `${offset}px` }}
       />
 
       {modes.map(({ value, Icon }) => (
