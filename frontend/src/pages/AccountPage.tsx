@@ -140,21 +140,21 @@ export default function AccountPage() {
         {profile && (
           <Tabs defaultValue="profile">
             <TabsList>
-              <TabsTrigger value="profile" className="gap-1.5">
-                <User className="h-3.5 w-3.5" />
+              <TabsTrigger value="profile" className="gap-1">
+                <User className="h-3 w-3" />
                 {t('accountPage.profile')}
               </TabsTrigger>
-              <TabsTrigger value="password" className="gap-1.5">
-                <Lock className="h-3.5 w-3.5" />
+              <TabsTrigger value="password" className="gap-1">
+                <Lock className="h-3 w-3" />
                 {t('accountPage.tabPassword')}
               </TabsTrigger>
-              <TabsTrigger value="security" className="gap-1.5">
-                <Shield className="h-3.5 w-3.5" />
+              <TabsTrigger value="security" className="gap-1">
+                <Shield className="h-3 w-3" />
                 {t('accountPage.tabSecurity')}
               </TabsTrigger>
               {profile.role === 'admin' && (
-                <TabsTrigger value="admin" className="gap-1.5">
-                  <Settings className="h-3.5 w-3.5" />
+                <TabsTrigger value="admin" className="gap-1">
+                  <Settings className="h-3 w-3" />
                   {t('accountPage.tabAdmin')}
                 </TabsTrigger>
               )}
