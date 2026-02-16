@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/smtp"
+	"time"
 	"text/template"
 
 	"tinyauth-sidecar/internal/config"
@@ -106,6 +107,25 @@ func (s *MailService) sendEmail(e *email.Email) error {
 		// Plain
 		return e.Send(addr, auth)
 	}
+}
+
+// SendPasswordChangedEmail notifies a user that their password was changed.
+func (s *MailService) SendPasswordChangedEmail(toEmail string) error {
+	if s.cfg.SMTPHost == "" {
+		log.Printf("[mail disabled] password changed notification for %s (not sent)", toEmail)
+		return nil
+	}
+
+	body := fmt.Sprintf("Hello,\n\nYour password was changed at %s.\n\nIf this wasn't you, contact your administrator immediately.\n",
+		time.Now().Format("2006-01-02 15:04:05 MST"))
+
+	e := email.NewEmail()
+	e.From = s.cfg.SMTPFrom
+	e.To = []string{toEmail}
+	e.Subject = "Your password was changed"
+	e.Text = []byte(body)
+
+	return s.sendEmail(e)
 }
 
 func renderTemplate(name, tmplStr string, data emailData) (string, error) {

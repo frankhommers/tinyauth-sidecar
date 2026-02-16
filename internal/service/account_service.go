@@ -117,6 +117,7 @@ func (s *AccountService) ResetPassword(token, newPassword string) error {
 	_ = s.store.MarkResetTokenUsed(token)
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
+	s.notifyPasswordChanged(username)
 	return nil
 }
 
@@ -251,6 +252,7 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword strin
 	}
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
+	s.notifyPasswordChanged(username)
 	return nil
 }
 
@@ -344,6 +346,7 @@ func (s *AccountService) ResetPasswordSMS(phone, code, newPassword string) error
 
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
+	s.notifyPasswordChanged(username)
 	return nil
 }
 
@@ -416,6 +419,25 @@ func (s *AccountService) TotpRecover(username, recoveryKey, newSecret, code stri
 		return errors.New("invalid recovery key")
 	}
 	return s.TotpEnable(username, newSecret, code)
+}
+
+// notifyPasswordChanged sends an email notification about the password change.
+func (s *AccountService) notifyPasswordChanged(username string) {
+	toEmail := username
+	if !s.cfg.UsernameIsEmail {
+		email, _ := s.store.GetEmail(username)
+		if email != "" {
+			toEmail = email
+		}
+	}
+	if toEmail == "" || !emailRegex.MatchString(toEmail) {
+		return
+	}
+	go func() {
+		if err := s.mail.SendPasswordChangedEmail(toEmail); err != nil {
+			log.Printf("[mail] failed to send password changed notification to %s: %v", toEmail, err)
+		}
+	}()
 }
 
 // generateNumericCode generates a cryptographically random numeric code of the given length.
