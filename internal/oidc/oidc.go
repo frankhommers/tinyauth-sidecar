@@ -41,9 +41,10 @@ type Config struct {
 	Clients   []ClientConfig `toml:"clients"`
 }
 
-// UserMetaLookup allows the OIDC provider to look up display names from the store.
+// UserMetaLookup allows the OIDC provider to enrich claims from the store.
 type UserMetaLookup interface {
 	LookupName(username string) string
+	LookupEmail(username string) string
 }
 
 // Provider is the OIDC provider that registers endpoints on a gin RouterGroup.
@@ -323,9 +324,14 @@ func (p *Provider) validateSession(r *http.Request) (string, string, string, boo
 	name := resp.Header.Get("Remote-Name")
 	email := resp.Header.Get("Remote-Email")
 	log.Printf("[oidc] validateSession: user=%q email=%q name=%q (from forwardauth)", user, email, name)
-	if name == "" && p.userLookup != nil {
-		name = p.userLookup.LookupName(user)
-		log.Printf("[oidc] validateSession: name after store lookup=%q (key=%q)", name, user)
+	if p.userLookup != nil {
+		if name == "" {
+			name = p.userLookup.LookupName(user)
+		}
+		if email == "" {
+			email = p.userLookup.LookupEmail(user)
+		}
+		log.Printf("[oidc] validateSession: after store enrichment: email=%q name=%q", email, name)
 	}
 	return user, email, name, true
 }

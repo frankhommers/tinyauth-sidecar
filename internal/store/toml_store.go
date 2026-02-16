@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 	"path/filepath"
 	"sync"
 	"time"
@@ -201,6 +202,22 @@ func (s *Store) LookupName(username string) string {
 
 	if meta, ok := s.users[username]; ok {
 		return meta.Name
+	}
+	return ""
+}
+
+// LookupEmail returns the email address for a user (for OIDC claims).
+// Falls back to the username itself if it looks like an email.
+func (s *Store) LookupEmail(username string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if meta, ok := s.users[username]; ok && meta.Email != "" {
+		return meta.Email
+	}
+	// If the username looks like an email, use it directly
+	if strings.Contains(username, "@") {
+		return username
 	}
 	return ""
 }
