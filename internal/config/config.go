@@ -156,6 +156,21 @@ type EmailTemplateConfig struct {
 	Body    string `toml:"body"`
 }
 
+// OIDCConfig holds OIDC provider settings from config.toml.
+type OIDCConfig struct {
+	Enabled   bool           `toml:"enabled"`
+	IssuerURL string         `toml:"issuer_url"`
+	KeyPath   string         `toml:"key_path"`
+	Clients   []OIDCClient   `toml:"clients"`
+}
+
+// OIDCClient represents a registered OIDC client.
+type OIDCClient struct {
+	ID           string   `toml:"id"`
+	Secret       string   `toml:"secret"`
+	RedirectURIs []string `toml:"redirect_uris"`
+}
+
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
 	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
@@ -165,6 +180,7 @@ type FileConfig struct {
 	SMTP           SMTPConfig          `toml:"smtp"`
 	Email          EmailTemplateConfig `toml:"email"`
 	UI             UIConfig            `toml:"ui"`
+	OIDC           OIDCConfig          `toml:"oidc"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
