@@ -7,6 +7,7 @@ import (
 
 	"tinyauth-sidecar/internal/config"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -14,9 +15,8 @@ type DockerService struct{ cfg *config.Config }
 
 func NewDockerService(cfg *config.Config) *DockerService { return &DockerService{cfg: cfg} }
 
-// RestartTinyauth kills the tinyauth container with SIGTERM after a short delay.
+// RestartTinyauth restarts the tinyauth container via Docker API after a short delay.
 // The delay ensures the API response is sent back to the user first.
-// Docker's restart policy (restart: unless-stopped) brings it back up quickly.
 func (s *DockerService) RestartTinyauth() {
 	go func() {
 		time.Sleep(500 * time.Millisecond)
@@ -30,12 +30,13 @@ func (s *DockerService) RestartTinyauth() {
 			return
 		}
 		defer cli.Close()
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		if err := cli.ContainerKill(ctx, s.cfg.TinyauthContainerName, "SIGTERM"); err != nil {
-			log.Printf("failed to kill tinyauth container %s: %v", s.cfg.TinyauthContainerName, err)
+		timeout := 10 // seconds to wait for graceful stop
+		if err := cli.ContainerRestart(ctx, s.cfg.TinyauthContainerName, container.StopOptions{Timeout: &timeout}); err != nil {
+			log.Printf("failed to restart tinyauth container %s: %v", s.cfg.TinyauthContainerName, err)
 		} else {
-			log.Printf("tinyauth container %s killed (SIGTERM), waiting for restart policy", s.cfg.TinyauthContainerName)
+			log.Printf("tinyauth container %s restarted", s.cfg.TinyauthContainerName)
 		}
 	}()
 }
