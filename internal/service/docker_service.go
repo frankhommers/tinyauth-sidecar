@@ -55,6 +55,8 @@ func (s *DockerService) RestartTinyauth() error {
 	if err := s.waitForHealthy(120 * time.Second); err != nil {
 		return fmt.Errorf("tinyauth did not become healthy after restart: %w", err)
 	}
+	// Give tinyauth a moment to fully initialize all routes after healthz responds
+	time.Sleep(2 * time.Second)
 	log.Printf("tinyauth is healthy")
 	return nil
 }
@@ -63,7 +65,9 @@ func (s *DockerService) RestartTinyauth() error {
 // ContainerRestart is blocking (waits for container up), but the HTTP server
 // inside may need a moment to start accepting connections.
 func (s *DockerService) waitForHealthy(timeout time.Duration) error {
-	healthURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/")
+	// Use the health endpoint instead of / to ensure the API is actually ready.
+	// The SPA at / returns 200 before the backend is fully initialized.
+	healthURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/") + "/api/healthz"
 	httpClient := &http.Client{Timeout: 2 * time.Second}
 
 	deadline := time.Now().Add(timeout)
@@ -71,7 +75,8 @@ func (s *DockerService) waitForHealthy(timeout time.Duration) error {
 		resp, err := httpClient.Get(healthURL)
 		if err == nil {
 			resp.Body.Close()
-			if resp.StatusCode == http.StatusOK {
+			// Accept any 2xx as healthy (some versions return 200, others 204)
+			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 				return nil
 			}
 		}
