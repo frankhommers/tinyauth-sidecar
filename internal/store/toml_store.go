@@ -344,6 +344,24 @@ func (s *Store) StoreSMSResetCode(id, username, code string, expiresAt int64) er
 	return nil
 }
 
+// HasRecentSMSCode checks if an SMS code was sent to the given username within the cooldown period.
+func (s *Store) HasRecentSMSCode(username string, cooldown time.Duration) bool {
+	s.smsMu.Lock()
+	defer s.smsMu.Unlock()
+
+	cutoff := time.Now().Add(-cooldown).Unix()
+	for _, sc := range s.smsCodes {
+		if sc.Username == username {
+			// ExpiresAt is createdAt + 10min, so createdAt = ExpiresAt - 600
+			createdAt := sc.ExpiresAt - 600
+			if createdAt > cutoff {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // VerifySMSResetCode checks if a code is valid for the given phone's user.
 func (s *Store) VerifySMSResetCode(phone, code string) (string, error) {
 	username, err := s.FindUserByPhone(phone)
