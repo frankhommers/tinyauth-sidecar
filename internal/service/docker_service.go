@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 
 	"github.com/docker/docker/client"
 )

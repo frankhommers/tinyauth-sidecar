@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"tinyauth-usermanagement/internal/config"
-	"tinyauth-usermanagement/internal/middleware"
-	"tinyauth-usermanagement/internal/service"
+	"tinyauth-sidecar/internal/config"
+	"tinyauth-sidecar/internal/middleware"
+	"tinyauth-sidecar/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

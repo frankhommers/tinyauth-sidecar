@@ -11,11 +11,11 @@ WORKDIR /app
 COPY go.mod go.sum* ./
 COPY . .
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
-RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -o /out/tinyauth-usermanagement ./main.go
+RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -o /out/tinyauth-sidecar ./main.go
 
 FROM alpine:3.21
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
-COPY --from=backend-builder /out/tinyauth-usermanagement /app/tinyauth-usermanagement
+COPY --from=backend-builder /out/tinyauth-sidecar /app/tinyauth-sidecar
 EXPOSE 8080
-CMD ["/app/tinyauth-usermanagement"]
+CMD ["/app/tinyauth-sidecar"]

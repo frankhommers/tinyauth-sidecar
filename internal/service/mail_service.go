@@ -8,7 +8,7 @@ import (
 	"net/smtp"
 	"text/template"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 
 	"github.com/jordan-wright/email"
 )

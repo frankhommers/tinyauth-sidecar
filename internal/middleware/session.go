@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 
 	"github.com/gin-gonic/gin"
 )
