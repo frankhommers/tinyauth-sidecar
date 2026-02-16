@@ -43,6 +43,7 @@ type smsResetCode struct {
 	Code      string
 	ExpiresAt int64
 	Used      bool
+	Attempts  int
 }
 
 // Store provides persistence via a TOML file for user metadata and
@@ -356,11 +357,11 @@ func (s *Store) VerifySMSResetCode(phone, code string) (string, error) {
 	s.smsMu.Lock()
 	defer s.smsMu.Unlock()
 
-	// Find the most recent matching code for this user
+	// Find the most recent valid (unused, unexpired) code for this user
 	var bestID string
 	var bestExpires int64
 	for id, sc := range s.smsCodes {
-		if sc.Username == username && sc.Code == code && sc.ExpiresAt > bestExpires {
+		if sc.Username == username && !sc.Used && sc.ExpiresAt > time.Now().Unix() && sc.ExpiresAt > bestExpires {
 			bestID = id
 			bestExpires = sc.ExpiresAt
 		}
@@ -371,11 +372,18 @@ func (s *Store) VerifySMSResetCode(phone, code string) (string, error) {
 	}
 
 	sc := s.smsCodes[bestID]
+
+	// Check if code matches
+	if sc.Code != code {
+		sc.Attempts++
+		if sc.Attempts >= 3 {
+			sc.Used = true // invalidate after 3 failed attempts
+		}
+		return "", fmt.Errorf("invalid code")
+	}
+
 	if sc.Used {
 		return "", fmt.Errorf("code already used")
-	}
-	if time.Now().Unix() > sc.ExpiresAt {
-		return "", fmt.Errorf("code expired")
 	}
 
 	sc.Used = true
