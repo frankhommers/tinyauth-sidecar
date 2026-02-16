@@ -55,7 +55,8 @@ func main() {
 	usersSvc := service.NewUserFileService(cfg)
 	mailSvc := service.NewMailService(cfg)
 	dockerSvc := service.NewDockerService(cfg)
-	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, passwordHooks...)
+	auditSvc := service.NewAuditService("/data/audit.log")
+	accountSvc := service.NewAccountService(cfg, st, usersSvc, mailSvc, dockerSvc, passwordTargets, smsProvider, auditSvc, passwordHooks...)
 
 	r := gin.Default()
 

@@ -40,7 +40,7 @@ func (h *PublicHandler) RequestReset(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_ = h.account.RequestPasswordReset(req.Username)
+	_ = h.account.RequestPasswordReset(req.Username, c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "If user exists, reset email sent"})
 }
 
@@ -53,7 +53,7 @@ func (h *PublicHandler) ConfirmReset(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.account.ResetPassword(req.Token, req.NewPassword); err != nil {
+	if err := h.account.ResetPassword(req.Token, req.NewPassword, c.ClientIP()); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -119,7 +119,7 @@ func (h *PublicHandler) ForgotPasswordSMS(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "phone required"})
 		return
 	}
-	_ = h.account.RequestSMSReset(req.Phone)
+	_ = h.account.RequestSMSReset(req.Phone, c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "If a user is associated with this phone, a code was sent"})
 }
 
@@ -137,7 +137,7 @@ func (h *PublicHandler) ResetPasswordSMS(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "phone, code, and newPassword required"})
 		return
 	}
-	if err := h.account.ResetPasswordSMS(req.Phone, req.Code, req.NewPassword); err != nil {
+	if err := h.account.ResetPasswordSMS(req.Phone, req.Code, req.NewPassword, c.ClientIP()); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
