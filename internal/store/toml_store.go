@@ -193,6 +193,18 @@ func (s *Store) SetEmail(username, email string) error {
 	return s.saveTOML()
 }
 
+// LookupName returns the display name for a user (for OIDC claims).
+// Returns empty string if not found.
+func (s *Store) LookupName(username string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if meta, ok := s.users[username]; ok {
+		return meta.Name
+	}
+	return ""
+}
+
 // GetEmail retrieves the email address for a user.
 func (s *Store) GetEmail(username string) (string, error) {
 	s.mu.RLock()

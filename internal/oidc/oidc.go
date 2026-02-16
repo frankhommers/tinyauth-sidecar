@@ -40,6 +40,11 @@ type Config struct {
 	Clients   []ClientConfig `toml:"clients"`
 }
 
+// UserMetaLookup allows the OIDC provider to look up display names from the store.
+type UserMetaLookup interface {
+	LookupName(username string) string
+}
+
 // Provider is the OIDC provider that registers endpoints on a gin RouterGroup.
 type Provider struct {
 	cfg        Config
@@ -47,11 +52,12 @@ type Provider struct {
 	loginURL   string
 	keyManager *keyManager
 	codeStore  *codeStore
+	userLookup UserMetaLookup
 }
 
 // New creates a new OIDC provider. verifyURL is tinyauth's forwardauth endpoint,
 // loginURL is the public tinyauth login page.
-func New(cfg Config, verifyURL string, loginURL string) (*Provider, error) {
+func New(cfg Config, verifyURL string, loginURL string, userLookup UserMetaLookup) (*Provider, error) {
 	if cfg.KeyPath == "" {
 		cfg.KeyPath = "/data/oidc-keys"
 	}
@@ -70,6 +76,7 @@ func New(cfg Config, verifyURL string, loginURL string) (*Provider, error) {
 		cfg:        cfg,
 		verifyURL:  verifyURL,
 		loginURL:   loginURL,
+		userLookup: userLookup,
 		keyManager: km,
 		codeStore:  newCodeStore(60 * time.Second),
 	}, nil
@@ -312,7 +319,11 @@ func (p *Provider) validateSession(r *http.Request) (string, string, string, boo
 	if user == "" {
 		return "", "", "", false
 	}
-	return user, resp.Header.Get("Remote-Email"), resp.Header.Get("Remote-Name"), true
+	name := resp.Header.Get("Remote-Name")
+	if name == "" && p.userLookup != nil {
+		name = p.userLookup.LookupName(user)
+	}
+	return user, resp.Header.Get("Remote-Email"), name, true
 }
 
 // --- Helpers ---

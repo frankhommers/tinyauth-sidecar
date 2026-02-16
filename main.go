@@ -116,7 +116,7 @@ func main() {
 			})
 		}
 
-		oidcProvider, err := oidc.New(oidcCfg, cfg.TinyauthVerifyURL, cfg.TinyauthBaseURL)
+		oidcProvider, err := oidc.New(oidcCfg, cfg.TinyauthVerifyURL, cfg.TinyauthBaseURL, st)
 		if err != nil {
 			log.Fatalf("failed to init OIDC provider: %v", err)
 		}
