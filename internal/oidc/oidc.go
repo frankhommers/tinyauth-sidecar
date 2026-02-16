@@ -35,6 +35,7 @@ type ClientConfig struct {
 type Config struct {
 	Enabled   bool           `toml:"enabled"`
 	IssuerURL string         `toml:"issuer_url"`
+	LoginURL  string         `toml:"login_url"`
 	KeyPath   string         `toml:"key_path"`
 	Clients   []ClientConfig `toml:"clients"`
 }
@@ -53,6 +54,11 @@ type Provider struct {
 func New(cfg Config, verifyURL string, loginURL string) (*Provider, error) {
 	if cfg.KeyPath == "" {
 		cfg.KeyPath = "/data/oidc-keys"
+	}
+	// If login_url is set in OIDC config, use it (public URL for browser redirects).
+	// Otherwise fall back to the internal TINYAUTH_BASEURL.
+	if cfg.LoginURL != "" {
+		loginURL = cfg.LoginURL
 	}
 
 	km, err := newKeyManager(cfg.KeyPath)
