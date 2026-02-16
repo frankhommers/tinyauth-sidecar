@@ -118,8 +118,11 @@ func (h *AdminHandler) ReloadConfig(c *gin.Context) {
 
 func (h *AdminHandler) RestartTinyauth(c *gin.Context) {
 	log.Printf("[admin] tinyauth restart requested by %s", username(c))
-	h.dockerSvc.RestartTinyauth()
-	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "restart initiated"})
+	if err := h.dockerSvc.RestartTinyauth(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "restart complete"})
 }
 
 func (h *AdminHandler) TinyauthHealth(c *gin.Context) {

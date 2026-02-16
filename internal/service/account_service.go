@@ -119,7 +119,9 @@ func (s *AccountService) ResetPassword(token, newPassword, clientIP string) erro
 		return err
 	}
 	_ = s.store.MarkResetTokenUsed(token)
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
 	s.audit.Log("password_reset_confirm", username, clientIP, "success")
@@ -184,7 +186,9 @@ func (s *AccountService) SignupWithPhone(username, email, password, phone string
 	if !s.cfg.UsernameIsEmail && email != "" {
 		_ = s.store.SetEmail(username, email)
 	}
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	s.syncPasswordTargets(username, password, hash)
 	return "approved", nil
 }
@@ -198,7 +202,9 @@ func (s *AccountService) ApproveSignup(id string) error {
 		return err
 	}
 	_ = s.store.ApprovePendingSignup(id)
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	return nil
 }
 
@@ -256,7 +262,9 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword, clie
 	if err := s.users.Upsert(u); err != nil {
 		return err
 	}
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
 	s.audit.Log("password_change", username, clientIP, "success")
@@ -359,7 +367,9 @@ func (s *AccountService) ResetPasswordSMS(phone, code, newPassword, clientIP str
 		return err
 	}
 
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
 	s.audit.Log("sms_reset_confirm", phone, clientIP, "success")
@@ -407,7 +417,9 @@ func (s *AccountService) TotpEnable(username, secret, code string) error {
 	if err := s.users.Upsert(u); err != nil {
 		return err
 	}
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	return nil
 }
 
@@ -426,7 +438,9 @@ func (s *AccountService) TotpDisable(username, password string) error {
 	if err := s.users.Upsert(u); err != nil {
 		return err
 	}
-	s.docker.RestartTinyauth()
+	if err := s.docker.RestartTinyauth(); err != nil {
+		log.Printf("[restart] %v", err)
+	}
 	return nil
 }
 
