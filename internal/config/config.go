@@ -160,6 +160,7 @@ type EmailTemplateConfig struct {
 type OIDCConfig struct {
 	Enabled   bool           `toml:"enabled"`
 	IssuerURL string         `toml:"issuer_url"`
+	LoginURL  string         `toml:"login_url"`
 	KeyPath   string         `toml:"key_path"`
 	Clients   []OIDCClient   `toml:"clients"`
 }
