@@ -56,3 +56,17 @@ headers = [
 body = '''
 {"messages":{"authentication":{"producttoken":"YOUR_CM_PRODUCT_TOKEN"},"msg":[{"from":{"number":"TinyAuth"},"to":[{"number":"{{.To}}"}],"body":{"type":"AUTO","content":"{{.Message}}"}}]}}
 '''
+
+# OIDC Provider (optional)
+# Turns tinyauth into an identity provider for apps that support OIDC login
+# (Vikunja, Gitea, Grafana, etc.)
+# Endpoints are served under /oidc/ on the same port.
+[oidc]
+enabled = false
+issuer_url = "https://auth.example.com/oidc"
+key_path = "/data/oidc-keys"
+
+[[oidc.clients]]
+id = "vikunja"
+secret = "change-me"
+redirect_uris = ["https://todo.example.com/auth/openid/tinyauth"]

@@ -11,6 +11,7 @@ import (
 	"tinyauth-usermanagement/internal/config"
 	"tinyauth-usermanagement/internal/handler"
 	"tinyauth-usermanagement/internal/middleware"
+	"tinyauth-usermanagement/internal/oidc"
 	"tinyauth-usermanagement/internal/provider"
 	"tinyauth-usermanagement/internal/service"
 	"tinyauth-usermanagement/internal/store"
@@ -99,9 +100,33 @@ func main() {
 		adminHandler.Register(authed)
 	}
 
+	// OIDC provider (optional, enabled via config.toml)
+	if fileCfg.OIDC.Enabled {
+		oidcCfg := oidc.Config{
+			Enabled:   true,
+			IssuerURL: fileCfg.OIDC.IssuerURL,
+			KeyPath:   fileCfg.OIDC.KeyPath,
+		}
+		for _, c := range fileCfg.OIDC.Clients {
+			oidcCfg.Clients = append(oidcCfg.Clients, oidc.ClientConfig{
+				ID:           c.ID,
+				Secret:       c.Secret,
+				RedirectURIs: c.RedirectURIs,
+			})
+		}
+
+		oidcProvider, err := oidc.New(oidcCfg, cfg.TinyauthVerifyURL, cfg.TinyauthBaseURL)
+		if err != nil {
+			log.Fatalf("failed to init OIDC provider: %v", err)
+		}
+		oidcGroup := r.Group("/oidc")
+		oidcProvider.Register(oidcGroup)
+		log.Printf("OIDC provider enabled at /oidc (issuer: %s)", fileCfg.OIDC.IssuerURL)
+	}
+
 	serveSPA(r)
 
-	log.Printf("tinyauth-usermanagement listening on :%s", cfg.Port)
+	log.Printf("tinyauth-sidecar listening on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}
