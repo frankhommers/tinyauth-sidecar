@@ -300,6 +300,11 @@ func (s *AccountService) RequestSMSReset(phone string) error {
 		return nil
 	}
 
+	// Cooldown: max 1 SMS per phone per 5 minutes
+	if s.store.HasRecentSMSCode(username, 5*time.Minute) {
+		return nil // silent, don't leak info
+	}
+
 	code, err := generateNumericCode(6)
 	if err != nil {
 		return err
