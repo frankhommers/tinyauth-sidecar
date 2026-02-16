@@ -35,6 +35,7 @@ type Config struct {
 	EmailBody               string
 	BackgroundImage         string
 	Title                   string
+	RestartMethod           string
 }
 
 func Load() *Config {
@@ -66,6 +67,7 @@ func Load() *Config {
 		EmailBody:             getEnv("EMAIL_BODY", ""),
 		BackgroundImage:       getEnv("BACKGROUND_IMAGE", "/background.jpg"),
 		Title:                getEnv("TITLE", ""),
+		RestartMethod:        getEnv("TINYAUTH_RESTART_METHOD", "restart"),
 	}
 
 	return cfg
