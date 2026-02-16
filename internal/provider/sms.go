@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 )
 
 // SMSProvider is the interface for sending SMS messages.

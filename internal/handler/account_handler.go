@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"tinyauth-usermanagement/internal/service"
+	"tinyauth-sidecar/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

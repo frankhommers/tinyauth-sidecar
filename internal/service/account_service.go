@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"tinyauth-usermanagement/internal/config"
-	"tinyauth-usermanagement/internal/provider"
-	"tinyauth-usermanagement/internal/store"
+	"tinyauth-sidecar/internal/config"
+	"tinyauth-sidecar/internal/provider"
+	"tinyauth-sidecar/internal/store"
 
 	"github.com/google/uuid"
 	zxcvbn "github.com/nbutton23/zxcvbn-go"

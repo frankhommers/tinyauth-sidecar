@@ -12,7 +12,7 @@ import (
 	"text/template"
 	"time"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 )
 
 // WebhookPasswordHook sends password changes to a configurable webhook.

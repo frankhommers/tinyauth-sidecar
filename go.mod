@@ -1,4 +1,4 @@
-module tinyauth-usermanagement
+module tinyauth-sidecar
 
 go 1.24.0
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"tinyauth-usermanagement/internal/config"
+	"tinyauth-sidecar/internal/config"
 )
 
 type UserRecord struct {

@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"tinyauth-usermanagement/internal/config"
-	"tinyauth-usermanagement/internal/provider"
-	"tinyauth-usermanagement/internal/service"
-	"tinyauth-usermanagement/internal/store"
+	"tinyauth-sidecar/internal/config"
+	"tinyauth-sidecar/internal/provider"
+	"tinyauth-sidecar/internal/service"
+	"tinyauth-sidecar/internal/store"
 
 	"github.com/gin-gonic/gin"
 )
