@@ -143,7 +143,16 @@ func (p *Provider) authorize(c *gin.Context) {
 	// Check tinyauth session
 	user, email, name, ok := p.validateSession(c.Request)
 	if !ok {
-		loginURL := p.loginURL + "?rd=" + url.QueryEscape(c.Request.URL.String())
+		// Build the full absolute URL so tinyauth can redirect back after login.
+		// c.Request.URL only contains the path+query; prepend the issuer base.
+		issuerBase := strings.TrimSuffix(p.cfg.IssuerURL, "/")
+		// IssuerURL is e.g. https://auth.hommers.nl/oidc, request path is /oidc/authorize?...
+		// We need the base domain part only.
+		if idx := strings.Index(issuerBase, "/oidc"); idx > 0 {
+			issuerBase = issuerBase[:idx]
+		}
+		fullURL := issuerBase + c.Request.URL.String()
+		loginURL := p.loginURL + "?rd=" + url.QueryEscape(fullURL)
 		c.Redirect(302, loginURL)
 		return
 	}
