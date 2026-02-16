@@ -105,6 +105,7 @@ func main() {
 		oidcCfg := oidc.Config{
 			Enabled:   true,
 			IssuerURL: fileCfg.OIDC.IssuerURL,
+			LoginURL:  fileCfg.OIDC.LoginURL,
 			KeyPath:   fileCfg.OIDC.KeyPath,
 		}
 		for _, c := range fileCfg.OIDC.Clients {
