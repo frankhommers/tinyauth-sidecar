@@ -59,30 +59,14 @@ func (s *DockerService) RestartTinyauth() error {
 	return nil
 }
 
-// waitForHealthy waits for tinyauth to go down first, then polls until it's back up.
+// waitForHealthy polls the tinyauth HTTP endpoint until it responds with 200.
+// ContainerRestart is blocking (waits for container up), but the HTTP server
+// inside may need a moment to start accepting connections.
 func (s *DockerService) waitForHealthy(timeout time.Duration) error {
 	healthURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/")
 	httpClient := &http.Client{Timeout: 2 * time.Second}
 
 	deadline := time.Now().Add(timeout)
-
-	// Phase 1: wait for tinyauth to go DOWN (max 30s of the total timeout)
-	downDeadline := time.Now().Add(30 * time.Second)
-	if downDeadline.After(deadline) {
-		downDeadline = deadline
-	}
-	for time.Now().Before(downDeadline) {
-		resp, err := httpClient.Get(healthURL)
-		if err != nil {
-			// Connection refused = it's down, move to phase 2
-			log.Printf("tinyauth is down, waiting for it to come back up")
-			break
-		}
-		resp.Body.Close()
-		time.Sleep(250 * time.Millisecond)
-	}
-
-	// Phase 2: wait for tinyauth to come back UP
 	for time.Now().Before(deadline) {
 		resp, err := httpClient.Get(healthURL)
 		if err == nil {
