@@ -152,7 +152,7 @@ func (p *Provider) authorize(c *gin.Context) {
 			issuerBase = issuerBase[:idx]
 		}
 		fullURL := issuerBase + c.Request.URL.String()
-		loginURL := p.loginURL + "?redirect_uri=" + url.QueryEscape(fullURL)
+		loginURL := strings.TrimRight(p.loginURL, "/") + "/login?redirect_uri=" + url.QueryEscape(fullURL)
 		c.Redirect(302, loginURL)
 		return
 	}
