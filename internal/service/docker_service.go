@@ -29,7 +29,7 @@ func (s *DockerService) RestartTinyauth() error {
 	}
 	defer cli.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
 	method := s.cfg.RestartMethod
@@ -52,7 +52,7 @@ func (s *DockerService) RestartTinyauth() error {
 	}
 
 	// Wait for tinyauth to become healthy
-	if err := s.waitForHealthy(30 * time.Second); err != nil {
+	if err := s.waitForHealthy(120 * time.Second); err != nil {
 		return fmt.Errorf("tinyauth did not become healthy after restart: %w", err)
 	}
 	log.Printf("tinyauth is healthy")
