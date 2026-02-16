@@ -32,19 +32,20 @@ type AccountService struct {
 	passwordTargets *provider.PasswordTargetProvider
 	passwordHooks   []provider.PasswordChangeHook
 	sms             provider.SMSProvider
+	audit           *AuditService
 }
 
-func NewAccountService(cfg *config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider, passwordHooks ...provider.PasswordChangeHook) *AccountService {
+func NewAccountService(cfg *config.Config, st *store.Store, users *UserFileService, mail *MailService, docker *DockerService, passwordTargets *provider.PasswordTargetProvider, sms provider.SMSProvider, audit *AuditService, passwordHooks ...provider.PasswordChangeHook) *AccountService {
 	var hooks []provider.PasswordChangeHook
 	for _, h := range passwordHooks {
 		if h != nil {
 			hooks = append(hooks, h)
 		}
 	}
-	return &AccountService{cfg: cfg, store: st, users: users, mail: mail, docker: docker, passwordTargets: passwordTargets, passwordHooks: hooks, sms: sms}
+	return &AccountService{cfg: cfg, store: st, users: users, mail: mail, docker: docker, passwordTargets: passwordTargets, passwordHooks: hooks, sms: sms, audit: audit}
 }
 
-func (s *AccountService) RequestPasswordReset(username string) error {
+func (s *AccountService) RequestPasswordReset(username, clientIP string) error {
 	u, ok, err := s.users.Find(username)
 	if err != nil {
 		return err
@@ -85,18 +86,21 @@ func (s *AccountService) RequestPasswordReset(username string) error {
 		toEmail = email
 	}
 
+	s.audit.Log("password_reset_request", username, clientIP, "sent")
 	return s.mail.SendResetEmail(toEmail, token)
 }
 
-func (s *AccountService) ResetPassword(token, newPassword string) error {
+func (s *AccountService) ResetPassword(token, newPassword, clientIP string) error {
 	username, expiresAt, used, err := s.store.GetResetToken(token)
 	if err != nil {
 		return err
 	}
 	if username == "" {
+		s.audit.Log("password_reset_confirm", "unknown", clientIP, "invalid_token")
 		return errors.New("invalid token")
 	}
 	if used || time.Now().Unix() > expiresAt {
+		s.audit.Log("password_reset_confirm", username, clientIP, "token_expired")
 		return errors.New("token expired")
 	}
 	hash, err := HashPassword(newPassword)
@@ -118,6 +122,7 @@ func (s *AccountService) ResetPassword(token, newPassword string) error {
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
+	s.audit.Log("password_reset_confirm", username, clientIP, "success")
 	return nil
 }
 
@@ -228,7 +233,7 @@ func (s *AccountService) SetEmail(username, email string) error {
 	return s.store.SetEmail(username, email)
 }
 
-func (s *AccountService) ChangePassword(username, oldPassword, newPassword string) error {
+func (s *AccountService) ChangePassword(username, oldPassword, newPassword, clientIP string) error {
 	u, ok, err := s.users.Find(username)
 	if err != nil {
 		return err
@@ -237,6 +242,7 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword strin
 		return errors.New("not found")
 	}
 	if bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(oldPassword)) != nil {
+		s.audit.Log("password_change", username, clientIP, "invalid_old_password")
 		return errors.New("old password invalid")
 	}
 	if err := s.validatePassword(newPassword); err != nil {
@@ -253,6 +259,7 @@ func (s *AccountService) ChangePassword(username, oldPassword, newPassword strin
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
+	s.audit.Log("password_change", username, clientIP, "success")
 	return nil
 }
 
@@ -287,7 +294,7 @@ func (s *AccountService) syncPasswordTargets(username, plainPassword, hashedPass
 }
 
 // RequestSMSReset sends a reset code via SMS.
-func (s *AccountService) RequestSMSReset(phone string) error {
+func (s *AccountService) RequestSMSReset(phone, clientIP string) error {
 	if s.sms == nil {
 		return errors.New("SMS not configured")
 	}
@@ -319,16 +326,19 @@ func (s *AccountService) RequestSMSReset(phone string) error {
 	msg := fmt.Sprintf("Your password reset code is: %s (valid for 10 minutes)", code)
 	if err := s.sms.SendSMS(phone, msg); err != nil {
 		log.Printf("[sms] failed to send SMS to %s: %v", phone, err)
+		s.audit.Log("sms_reset_request", phone, clientIP, "send_failed")
 		return fmt.Errorf("failed to send SMS")
 	}
 
+	s.audit.Log("sms_reset_request", phone, clientIP, "sent")
 	return nil
 }
 
 // ResetPasswordSMS verifies a code and resets the password.
-func (s *AccountService) ResetPasswordSMS(phone, code, newPassword string) error {
+func (s *AccountService) ResetPasswordSMS(phone, code, newPassword, clientIP string) error {
 	username, err := s.store.VerifySMSResetCode(phone, code)
 	if err != nil {
+		s.audit.Log("sms_reset_confirm", phone, clientIP, "failed:"+err.Error())
 		return err
 	}
 
@@ -352,6 +362,7 @@ func (s *AccountService) ResetPasswordSMS(phone, code, newPassword string) error
 	s.docker.RestartTinyauth()
 	s.syncPasswordTargets(username, newPassword, hash)
 	s.notifyPasswordChanged(username)
+	s.audit.Log("sms_reset_confirm", phone, clientIP, "success")
 	return nil
 }
 

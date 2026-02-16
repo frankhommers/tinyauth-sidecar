@@ -48,7 +48,7 @@ func (h *AccountHandler) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.account.ChangePassword(username(c), req.OldPassword, req.NewPassword); err != nil {
+	if err := h.account.ChangePassword(username(c), req.OldPassword, req.NewPassword, c.ClientIP()); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
