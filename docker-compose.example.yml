@@ -1,0 +1,63 @@
+services:
+  tinyauth:
+    container_name: tinyauth
+    image: ghcr.io/steveiliop56/tinyauth:v4
+    restart: unless-stopped
+    environment:
+      - APP_URL=https://auth.hommers.nl
+      - DATABASE_PATH=/data/tinyauth.db
+      - DISABLE_ANALYTICS=true
+      - LOG_LEVEL=info
+      - PORT=3000
+      - ADDRESS=0.0.0.0
+      - USERS_FILE=/users/users.txt
+      - SECURE_COOKIE=true
+      - SESSION_EXPIRY=7200
+      - LOGIN_TIMEOUT=300
+      - LOGIN_MAX_RETRIES=5
+      - APP_TITLE=Hommers
+      - FORGOT_PASSWORD_MESSAGE=Wachtwoord vergeten? Ga naar "https://auth.hommers.nl/manage"
+    volumes:
+      - ./users:/users
+      - ./data:/data
+    command: ["--experimental.configFile=/data/tinyauth.yaml"]
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.tinyauth.rule: Host(`auth.hommers.nl`)
+      traefik.http.routers.tinyauth.entrypoints: websecure
+      traefik.http.routers.tinyauth.tls.certresolver: letsencrypt
+      traefik.http.routers.tinyauth.priority: "1"
+      traefik.http.services.tinyauth.loadbalancer.server.port: "3000"
+      traefik.http.middlewares.tinyauth.forwardauth.address: http://tinyauth:3000/api/auth/traefik
+
+  sidecar:
+    container_name: tinyauth-sidecar
+    image: git.initialize.nl/aivy/tinyauth-sidecar:latest
+    restart: unless-stopped
+    environment:
+      - USERS_FILE_PATH=/users/users.txt
+      - USERS_TOML=/users/users.toml
+      - TINYAUTH_CONTAINER_NAME=tinyauth
+      - TINYAUTH_BASEURL=http://tinyauth:3000
+      - DISABLE_SIGNUP=true
+      - PORT=8080
+      - CONFIG_PATH=/data/config.toml
+    volumes:
+      - ./users:/users
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.sidecar.rule: Host(`auth.hommers.nl`) && (PathPrefix(`/manage`) || PathPrefix(`/oidc`))
+      traefik.http.routers.sidecar.entrypoints: websecure
+      traefik.http.routers.sidecar.tls.certresolver: letsencrypt
+      traefik.http.routers.sidecar.priority: "10"
+      traefik.http.services.sidecar.loadbalancer.server.port: "8080"
+
+networks:
+  traefik:
+    external: true
