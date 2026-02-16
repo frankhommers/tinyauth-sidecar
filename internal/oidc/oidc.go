@@ -325,11 +325,11 @@ func (p *Provider) validateSession(r *http.Request) (string, string, string, boo
 	email := resp.Header.Get("Remote-Email")
 	log.Printf("[oidc] validateSession: user=%q email=%q name=%q (from forwardauth)", user, email, name)
 	if p.userLookup != nil {
-		if name == "" {
-			name = p.userLookup.LookupName(user)
+		if storeName := p.userLookup.LookupName(user); storeName != "" {
+			name = storeName
 		}
-		if email == "" {
-			email = p.userLookup.LookupEmail(user)
+		if storeEmail := p.userLookup.LookupEmail(user); storeEmail != "" {
+			email = storeEmail
 		}
 		log.Printf("[oidc] validateSession: after store enrichment: email=%q name=%q", email, name)
 	}
