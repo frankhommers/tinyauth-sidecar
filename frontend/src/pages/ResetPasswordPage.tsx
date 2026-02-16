@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { PasswordStrengthBar } from '@/components/PasswordStrengthBar'
+import { RefreshCw } from 'lucide-react'
 import { useFeatures } from '@/context/FeaturesContext'
 
 export default function ResetPasswordPage() {
@@ -28,6 +29,7 @@ export default function ResetPasswordPage() {
   const [smsConfirmPassword, setSmsConfirmPassword] = useState('')
   const [smsMsg, setSmsMsg] = useState('')
   const [codeSent, setCodeSent] = useState(false)
+  const [resetting, setResetting] = useState(false)
 
   // If neither email nor SMS is configured, show a message
   if (features.loaded && !features.emailEnabled && !features.smsEnabled) {
@@ -99,16 +101,20 @@ export default function ResetPasswordPage() {
                   )}
                 </div>
                 <Button
-                  disabled={!newPassword || newPassword !== confirmPassword}
+                  disabled={!newPassword || newPassword !== confirmPassword || resetting}
                   onClick={async () => {
+                    setResetting(true)
                     try {
                       await api.post('/password-reset/confirm', { token, newPassword })
                       setMsg(t('resetPage.resetSuccess'))
                     } catch (e: any) {
                       setMsg(e?.response?.data?.error || t('resetPage.resetError'))
+                    } finally {
+                      setResetting(false)
                     }
                   }}
                 >
+                  {resetting && <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />}
                   {t('resetPage.resetPassword')}
                 </Button>
               </>
@@ -159,16 +165,20 @@ export default function ResetPasswordPage() {
                   )}
                 </div>
                 <Button
-                  disabled={!smsNewPassword || smsNewPassword !== smsConfirmPassword}
+                  disabled={!smsNewPassword || smsNewPassword !== smsConfirmPassword || resetting}
                   onClick={async () => {
+                    setResetting(true)
                     try {
                       await api.post('/auth/reset-password-sms', { phone, code: smsCode, newPassword: smsNewPassword })
                       setSmsMsg(t('resetPage.resetSuccess'))
                     } catch (e: any) {
                       setSmsMsg(e?.response?.data?.error || t('resetPage.resetError'))
+                    } finally {
+                      setResetting(false)
                     }
                   }}
                 >
+                  {resetting && <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />}
                   {t('resetPage.resetPassword')}
                 </Button>
                 <Button

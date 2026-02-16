@@ -61,6 +61,7 @@ export default function AccountPage() {
   const [disablePassword, setDisablePassword] = useState('')
   const [showTotpSetup, setShowTotpSetup] = useState(false)
   const [totpLoading, setTotpLoading] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
 
   // Admin fields
   const [adminStatus, setAdminStatus] = useState<{ email: boolean; sms: boolean; usernameIsEmail: boolean; userCount: number } | null>(null)
@@ -241,8 +242,9 @@ export default function AccountPage() {
                   )}
                 </div>
                 <Button
-                  disabled={!newPassword || newPassword !== confirmPassword}
+                  disabled={!newPassword || newPassword !== confirmPassword || changingPassword}
                   onClick={async () => {
+                    setChangingPassword(true)
                     try {
                       await api.post('/account/change-password', { oldPassword, newPassword })
                       setMsg(t('accountPage.passwordChanged'))
@@ -251,9 +253,12 @@ export default function AccountPage() {
                       setConfirmPassword('')
                     } catch (e: any) {
                       setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                    } finally {
+                      setChangingPassword(false)
                     }
                   }}
                 >
+                  {changingPassword && <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1.5" />}
                   {t('accountPage.changePassword')}
                 </Button>
               </div>
