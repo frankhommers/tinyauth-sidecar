@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -323,7 +322,6 @@ func (p *Provider) validateSession(r *http.Request) (string, string, string, boo
 	}
 	name := resp.Header.Get("Remote-Name")
 	email := resp.Header.Get("Remote-Email")
-	log.Printf("[oidc] validateSession: user=%q email=%q name=%q (from forwardauth)", user, email, name)
 	if p.userLookup != nil {
 		if storeName := p.userLookup.LookupName(user); storeName != "" {
 			name = storeName
@@ -331,7 +329,6 @@ func (p *Provider) validateSession(r *http.Request) (string, string, string, boo
 		if storeEmail := p.userLookup.LookupEmail(user); storeEmail != "" {
 			email = storeEmail
 		}
-		log.Printf("[oidc] validateSession: after store enrichment: email=%q name=%q", email, name)
 	}
 	return user, email, name, true
 }
