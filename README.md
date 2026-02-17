@@ -104,6 +104,21 @@ headers = [
 # filter_users = ["alice@example.com"]
 ```
 
+**DirectAdmin example** — sync email passwords to a DirectAdmin server:
+
+```toml
+[[password_hooks]]
+enabled = true
+url = "https://direct-admin.example.com:2222/CMD_API_POP"
+method = "POST"
+content_type = "application/x-www-form-urlencoded"
+body = "action=modify&domain={{.Domain}}&user={{.User}}&passwd={{.Password}}&passwd2={{.Password}}"
+timeout = 10
+headers = [
+  { key = "Authorization", value = "Basic base64encoded(user:pass)" }
+]
+```
+
 **Template variables:** `{{.Email}}`, `{{.User}}` (before @), `{{.Domain}}` (after @), `{{.Password}}`, `{{.Role}}`
 
 ### SMS webhook
