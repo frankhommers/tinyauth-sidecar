@@ -54,7 +54,9 @@ sudo docker compose up -d
 | `TINYAUTH_BASEURL` | `http://tinyauth:3000` | Tinyauth base URL (derives verify + logout URLs) |
 | `TINYAUTH_VERIFY_URL` | `{BASEURL}/api/auth/traefik` | Override: tinyauth forwardauth URL |
 | `TINYAUTH_LOGOUT_URL` | `{BASEURL}/api/auth/logout` | Override: tinyauth logout URL |
+| `TINYAUTH_EXTERNAL_URL` | — | External URL (e.g. `https://auth.example.com`). When set, restart health checks also wait for Traefik to re-discover the container |
 | `TINYAUTH_CONTAINER_NAME` | `tinyauth` | Container to restart after user changes |
+| `TINYAUTH_RESTART_METHOD` | `restart` | How to restart tinyauth: `restart` (Docker restart) or `signal:SIGTERM` / `signal:SIGHUP` |
 | `DOCKER_SOCKET_PATH` | `/var/run/docker.sock` | Docker socket path |
 | `DISABLE_SIGNUP` | `true` | Disable signup (hides UI + blocks API) |
 | `SIGNUP_REQUIRE_APPROVAL` | `false` | Require admin approval for signups |
