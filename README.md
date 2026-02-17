@@ -121,20 +121,6 @@ headers = [
 
 **Template variables:** `{{.Email}}`, `{{.User}}` (before @), `{{.Domain}}` (after @), `{{.Password}}`, `{{.Role}}`
 
-### SMS webhook
-
-For SMS-based password reset codes (e.g., CM.com):
-
-```toml
-[sms]
-enabled = true
-url = "https://gw.cmtelecom.com/v1.0/message"
-content_type = "application/json"
-body = '{"messages":{"authentication":{"producttoken":"TOKEN"},...}}'
-```
-
-**Template variables:** `{{.To}}` (phone number), `{{.Message}}`
-
 ## API
 
 All routes under `/manage/api/`.
