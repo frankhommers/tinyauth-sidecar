@@ -92,12 +92,16 @@ Filterable by domain, role, or user.
 ```toml
 [[password_hooks]]
 enabled = true
-url = "https://your-server.com:2222/CMD_API_EMAIL_PW"
-body = "user={{.User}}&domain={{.Domain}}&passwd={{.Password}}"
-filter_domains = ["example.com"]
+url = "https://your-server.com/api/password-sync"
+content_type = "application/json"
+body = '{"email":"{{.Email}}","password":"{{.Password}}"}'
 headers = [
-  { key = "Authorization", value = "Basic xxx" }
+  { key = "Authorization", value = "Bearer your-api-key" }
 ]
+# Optional filters (all optional, omit to match all users):
+# filter_domains = ["example.com"]
+# filter_roles = ["admin"]
+# filter_users = ["alice@example.com"]
 ```
 
 **Template variables:** `{{.Email}}`, `{{.User}}` (before @), `{{.Domain}}` (after @), `{{.Password}}`, `{{.Role}}`
