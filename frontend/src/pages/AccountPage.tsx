@@ -245,6 +245,8 @@ export default function AccountPage() {
                   disabled={!newPassword || newPassword !== confirmPassword || changingPassword}
                   onClick={async () => {
                     setChangingPassword(true)
+                    setRestarting(true)
+                    setTinyauthUp(false)
                     try {
                       await api.post('/account/change-password', { oldPassword, newPassword })
                       setMsg(t('accountPage.passwordChanged'))
@@ -255,6 +257,8 @@ export default function AccountPage() {
                       setMsg(e?.response?.data?.error || t('accountPage.genericError'))
                     } finally {
                       setChangingPassword(false)
+                      setRestarting(false)
+                      setTinyauthUp(true)
                     }
                   }}
                 >
@@ -324,8 +328,11 @@ export default function AccountPage() {
                             className="flex-1 min-w-[120px]"
                           />
                           <Button
+                            disabled={restarting}
                             onClick={async () => {
                               try {
+                                setRestarting(true)
+                                setTinyauthUp(false)
                                 await api.post('/account/totp/enable', { secret: totpSecret, code: totpCode })
                                 setMsg(t('accountPage.totpEnabledSuccess'))
                                 setShowTotpSetup(false)
@@ -336,10 +343,13 @@ export default function AccountPage() {
                                 void load()
                               } catch (e: any) {
                                 setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                              } finally {
+                                setRestarting(false)
+                                setTinyauthUp(true)
                               }
                             }}
                           >
-                            {t('common.enable')}
+                            {restarting ? <><RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" />{t('accountPage.tinyauthRestarting')}</> : t('common.enable')}
                           </Button>
                         </div>
                       </div>
@@ -359,18 +369,24 @@ export default function AccountPage() {
                     />
                     <Button
                       variant="destructive"
+                      disabled={restarting}
                       onClick={async () => {
                         try {
+                          setRestarting(true)
+                          setTinyauthUp(false)
                           await api.post('/account/totp/disable', { password: disablePassword })
                           setMsg(t('accountPage.totpDisabledSuccess'))
                           setDisablePassword('')
                           void load()
                         } catch (e: any) {
                           setMsg(e?.response?.data?.error || t('accountPage.genericError'))
+                        } finally {
+                          setRestarting(false)
+                          setTinyauthUp(true)
                         }
                       }}
                     >
-                      {t('accountPage.disableTotp')}
+                      {restarting ? <><RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" />{t('accountPage.tinyauthRestarting')}</> : t('accountPage.disableTotp')}
                     </Button>
                   </div>
                 )}
