@@ -32,6 +32,9 @@ func (s *DockerService) RestartTinyauth() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
+	// Get StartedAt before restart so we can verify the container actually restarted
+	startedBefore, _ := s.getStartedAt(cli, ctx)
+
 	method := s.cfg.RestartMethod
 	if method == "" {
 		method = "restart"
@@ -48,25 +51,53 @@ func (s *DockerService) RestartTinyauth() error {
 		if err := cli.ContainerRestart(ctx, s.cfg.TinyauthContainerName, container.StopOptions{Timeout: &timeout}); err != nil {
 			return fmt.Errorf("failed to restart tinyauth container %s: %w", s.cfg.TinyauthContainerName, err)
 		}
-		log.Printf("tinyauth container %s restarted", s.cfg.TinyauthContainerName)
+		log.Printf("tinyauth container %s restart command completed", s.cfg.TinyauthContainerName)
 	}
 
-	// Wait for tinyauth to become healthy
+	// Phase 1: verify the container actually restarted by checking StartedAt changed
+	if startedBefore != "" {
+		if err := s.waitForNewStart(cli, ctx, startedBefore); err != nil {
+			log.Printf("[restart] warning: %v", err)
+			// Continue anyway — maybe it restarted too fast to catch
+		}
+	}
+
+	// Phase 2: wait for HTTP endpoint to be ready
 	if err := s.waitForHealthy(120 * time.Second); err != nil {
 		return fmt.Errorf("tinyauth did not become healthy after restart: %w", err)
 	}
-	// Give tinyauth a moment to fully initialize all routes after healthz responds
-	time.Sleep(2 * time.Second)
 	log.Printf("tinyauth is healthy")
 	return nil
 }
 
-// waitForHealthy polls the tinyauth HTTP endpoint until it responds with 200.
-// ContainerRestart is blocking (waits for container up), but the HTTP server
-// inside may need a moment to start accepting connections.
+// getStartedAt returns the container's StartedAt timestamp.
+func (s *DockerService) getStartedAt(cli *client.Client, ctx context.Context) (string, error) {
+	info, err := cli.ContainerInspect(ctx, s.cfg.TinyauthContainerName)
+	if err != nil {
+		return "", err
+	}
+	if info.State != nil {
+		return info.State.StartedAt, nil
+	}
+	return "", nil
+}
+
+// waitForNewStart polls until the container's StartedAt differs from the original value.
+func (s *DockerService) waitForNewStart(cli *client.Client, ctx context.Context, oldStartedAt string) error {
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		current, err := s.getStartedAt(cli, ctx)
+		if err == nil && current != "" && current != oldStartedAt {
+			log.Printf("tinyauth container restarted (was: %s, now: %s)", oldStartedAt, current)
+			return nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return fmt.Errorf("container StartedAt did not change within 30s")
+}
+
+// waitForHealthy polls the tinyauth health endpoint until it responds with 2xx.
 func (s *DockerService) waitForHealthy(timeout time.Duration) error {
-	// Use the health endpoint instead of / to ensure the API is actually ready.
-	// The SPA at / returns 200 before the backend is fully initialized.
 	healthURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/") + "/api/healthz"
 	httpClient := &http.Client{Timeout: 2 * time.Second}
 
@@ -75,7 +106,6 @@ func (s *DockerService) waitForHealthy(timeout time.Duration) error {
 		resp, err := httpClient.Get(healthURL)
 		if err == nil {
 			resp.Body.Close()
-			// Accept any 2xx as healthy (some versions return 200, others 204)
 			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 				return nil
 			}
