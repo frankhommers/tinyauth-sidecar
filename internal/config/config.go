@@ -23,6 +23,7 @@ type Config struct {
 	MailBaseURL             string
 	TOTPIssuer              string
 	TinyauthBaseURL         string
+	TinyauthExternalURL     string
 	TinyauthVerifyURL       string
 	TinyauthLogoutURL       string
 	TinyauthContainerName   string
@@ -55,6 +56,7 @@ func Load() *Config {
 		MailBaseURL:           getEnv("MAIL_BASE_URL", "http://localhost:8080"),
 		TOTPIssuer:            getEnv("TOTP_ISSUER", "tinyauth"),
 		TinyauthBaseURL:      baseURL,
+		TinyauthExternalURL:  getEnv("TINYAUTH_EXTERNAL_URL", ""),
 		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", baseURL+"/api/auth/traefik"),
 		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", baseURL+"/api/auth/logout"),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
