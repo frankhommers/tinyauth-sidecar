@@ -97,13 +97,34 @@ func (s *DockerService) waitForNewStart(cli *client.Client, ctx context.Context,
 }
 
 // waitForHealthy polls the tinyauth health endpoint until it responds with 2xx.
+// If an external URL is configured, it first waits for the internal endpoint,
+// then also waits for the external one (to confirm Traefik has re-discovered the container).
 func (s *DockerService) waitForHealthy(timeout time.Duration) error {
-	healthURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/") + "/api/healthz"
+	internalURL := strings.TrimRight(s.cfg.TinyauthBaseURL, "/") + "/api/healthz"
+
+	if err := s.pollHealthEndpoint(internalURL, timeout); err != nil {
+		return err
+	}
+
+	if s.cfg.TinyauthExternalURL != "" {
+		externalURL := strings.TrimRight(s.cfg.TinyauthExternalURL, "/") + "/api/healthz"
+		log.Printf("internal health OK, waiting for external endpoint: %s", externalURL)
+		if err := s.pollHealthEndpoint(externalURL, timeout); err != nil {
+			return fmt.Errorf("external health check failed: %w", err)
+		}
+		log.Printf("external health OK")
+	}
+
+	return nil
+}
+
+// pollHealthEndpoint polls a URL until it responds with 2xx or the timeout expires.
+func (s *DockerService) pollHealthEndpoint(url string, timeout time.Duration) error {
 	httpClient := &http.Client{Timeout: 2 * time.Second}
 
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		resp, err := httpClient.Get(healthURL)
+		resp, err := httpClient.Get(url)
 		if err == nil {
 			resp.Body.Close()
 			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
@@ -112,7 +133,7 @@ func (s *DockerService) waitForHealthy(timeout time.Duration) error {
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return fmt.Errorf("timeout waiting for %s", healthURL)
+	return fmt.Errorf("timeout waiting for %s", url)
 }
 
 // IsTinyauthRunning checks if the tinyauth container is running.
