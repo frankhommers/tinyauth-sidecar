@@ -11,7 +11,6 @@ import (
 	"tinyauth-sidecar/internal/config"
 	"tinyauth-sidecar/internal/handler"
 	"tinyauth-sidecar/internal/middleware"
-	"tinyauth-sidecar/internal/oidc"
 	"tinyauth-sidecar/internal/provider"
 	"tinyauth-sidecar/internal/service"
 	"tinyauth-sidecar/internal/store"
@@ -99,31 +98,6 @@ func main() {
 		// Admin endpoints
 		adminHandler := handler.NewAdminHandler(cfg, mailSvc, smsProvider, usersSvc, st, dockerSvc)
 		adminHandler.Register(authed)
-	}
-
-	// OIDC provider (optional, enabled via config.toml)
-	if fileCfg.OIDC.Enabled {
-		oidcCfg := oidc.Config{
-			Enabled:   true,
-			IssuerURL: fileCfg.OIDC.IssuerURL,
-			LoginURL:  fileCfg.OIDC.LoginURL,
-			KeyPath:   fileCfg.OIDC.KeyPath,
-		}
-		for _, c := range fileCfg.OIDC.Clients {
-			oidcCfg.Clients = append(oidcCfg.Clients, oidc.ClientConfig{
-				ID:           c.ID,
-				Secret:       c.Secret,
-				RedirectURIs: c.RedirectURIs,
-			})
-		}
-
-		oidcProvider, err := oidc.New(oidcCfg, cfg.TinyauthVerifyURL, cfg.TinyauthBaseURL, st)
-		if err != nil {
-			log.Fatalf("failed to init OIDC provider: %v", err)
-		}
-		oidcGroup := r.Group("/oidc")
-		oidcProvider.Register(oidcGroup)
-		log.Printf("OIDC provider enabled at /oidc (issuer: %s)", fileCfg.OIDC.IssuerURL)
 	}
 
 	serveSPA(r)

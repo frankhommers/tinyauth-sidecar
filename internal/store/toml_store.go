@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -195,7 +195,7 @@ func (s *Store) SetEmail(username, email string) error {
 	return s.saveTOML()
 }
 
-// LookupName returns the display name for a user (for OIDC claims).
+// LookupName returns the display name for a user.
 // Returns empty string if not found.
 func (s *Store) LookupName(username string) string {
 	s.mu.RLock()
@@ -207,7 +207,7 @@ func (s *Store) LookupName(username string) string {
 	return ""
 }
 
-// LookupEmail returns the email address for a user (for OIDC claims).
+// LookupEmail returns the email address for a user.
 // Falls back to the username itself if it looks like an email.
 func (s *Store) LookupEmail(username string) string {
 	s.mu.RLock()

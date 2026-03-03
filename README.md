@@ -1,6 +1,6 @@
 # tinyauth-usermanagement
 
-Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v4). Manages users in the shared plain-text users file.
+Companion sidecar for [tinyauth](https://github.com/steveiliop56/tinyauth) (v5). Manages users in the shared plain-text users file.
 
 ## Features
 

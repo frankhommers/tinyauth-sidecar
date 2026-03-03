@@ -1,12 +1,12 @@
 services:
   tinyauth:
-    image: ghcr.io/steveiliop56/tinyauth:v4
+    image: ghcr.io/steveiliop56/tinyauth:v5
     container_name: tinyauth
     restart: unless-stopped
     environment:
       TINYAUTH_APPURL: "https://auth.example.com"
       TINYAUTH_AUTH_USERSFILE: /users/users.txt
-      TINYAUTH_DISABLEANALYTICS: "true"
+      TINYAUTH_ANALYTICS_ENABLED: "false"
       TINYAUTH_AUTH_SECURECOOKIE: "true"
       TINYAUTH_UI_FORGOTPASSWORDMESSAGE: '<a href="https://auth.example.com/manage/reset-password">Forgot your password?</a>'
     volumes:

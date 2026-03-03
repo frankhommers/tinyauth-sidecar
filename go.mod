@@ -9,7 +9,6 @@ require (
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354

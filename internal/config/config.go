@@ -10,33 +10,33 @@ import (
 )
 
 type Config struct {
-	Port                    string
-	UsersFilePath           string
-	ResetTokenTTLSeconds    int64
-	DisableSignup          bool
-	SignupRequireApproval   bool
-	SMTPHost                string
-	SMTPPort                int
-	SMTPUsername            string
-	SMTPPassword            string
-	SMTPFrom                string
-	MailBaseURL             string
-	TOTPIssuer              string
-	TinyauthBaseURL         string
-	TinyauthExternalURL     string
-	TinyauthVerifyURL       string
-	TinyauthLogoutURL       string
-	TinyauthContainerName   string
-	DockerSocketPath        string
-	CORSOrigins             []string
-	MinPasswordLength       int
-	MinPasswordStrength     int
-	UsernameIsEmail         bool
-	EmailSubject            string
-	EmailBody               string
-	BackgroundImage         string
-	Title                   string
-	RestartMethod           string
+	Port                  string
+	UsersFilePath         string
+	ResetTokenTTLSeconds  int64
+	DisableSignup         bool
+	SignupRequireApproval bool
+	SMTPHost              string
+	SMTPPort              int
+	SMTPUsername          string
+	SMTPPassword          string
+	SMTPFrom              string
+	MailBaseURL           string
+	TOTPIssuer            string
+	TinyauthBaseURL       string
+	TinyauthExternalURL   string
+	TinyauthVerifyURL     string
+	TinyauthLogoutURL     string
+	TinyauthContainerName string
+	DockerSocketPath      string
+	CORSOrigins           []string
+	MinPasswordLength     int
+	MinPasswordStrength   int
+	UsernameIsEmail       bool
+	EmailSubject          string
+	EmailBody             string
+	BackgroundImage       string
+	Title                 string
+	RestartMethod         string
 }
 
 func Load() *Config {
@@ -55,10 +55,10 @@ func Load() *Config {
 		SMTPFrom:              getEnv("SMTP_FROM", "noreply@example.local"),
 		MailBaseURL:           getEnv("MAIL_BASE_URL", "http://localhost:8080"),
 		TOTPIssuer:            getEnv("TOTP_ISSUER", "tinyauth"),
-		TinyauthBaseURL:      baseURL,
-		TinyauthExternalURL:  getEnv("TINYAUTH_EXTERNAL_URL", ""),
-		TinyauthVerifyURL:    getEnv("TINYAUTH_VERIFY_URL", baseURL+"/api/auth/traefik"),
-		TinyauthLogoutURL:    getEnv("TINYAUTH_LOGOUT_URL", baseURL+"/api/auth/logout"),
+		TinyauthBaseURL:       baseURL,
+		TinyauthExternalURL:   getEnv("TINYAUTH_EXTERNAL_URL", ""),
+		TinyauthVerifyURL:     getEnv("TINYAUTH_VERIFY_URL", baseURL+"/api/auth/traefik"),
+		TinyauthLogoutURL:     getEnv("TINYAUTH_LOGOUT_URL", baseURL+"/api/auth/logout"),
 		TinyauthContainerName: getEnv("TINYAUTH_CONTAINER_NAME", "tinyauth"),
 		DockerSocketPath:      getEnv("DOCKER_SOCKET_PATH", "/var/run/docker.sock"),
 		CORSOrigins:           parseCSV(getEnv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080")),
@@ -68,8 +68,8 @@ func Load() *Config {
 		EmailSubject:          getEnv("EMAIL_SUBJECT", "Password reset"),
 		EmailBody:             getEnv("EMAIL_BODY", ""),
 		BackgroundImage:       getEnv("BACKGROUND_IMAGE", "/background.jpg"),
-		Title:                getEnv("TITLE", ""),
-		RestartMethod:        getEnv("TINYAUTH_RESTART_METHOD", "restart"),
+		Title:                 getEnv("TITLE", ""),
+		RestartMethod:         getEnv("TINYAUTH_RESTART_METHOD", "restart"),
 	}
 
 	return cfg
@@ -115,16 +115,16 @@ type HeaderEntry struct {
 
 // WebhookConfig holds configuration for a generic webhook (password hook or SMS).
 type WebhookConfig struct {
-	Enabled       bool              `toml:"enabled"`
-	URL           string            `toml:"url"`
-	Method        string            `toml:"method"`
-	ContentType   string            `toml:"content_type"`
-	Body          string            `toml:"body"`
-	Headers        []HeaderEntry `toml:"headers"`
-	Timeout        int           `toml:"timeout"`
-	SkipTLSVerify  bool          `toml:"skip_tls_verify"`
-	FilterDomains  []string      `toml:"filter_domains"`
-	FilterRoles    []string      `toml:"filter_roles"`
+	Enabled       bool          `toml:"enabled"`
+	URL           string        `toml:"url"`
+	Method        string        `toml:"method"`
+	ContentType   string        `toml:"content_type"`
+	Body          string        `toml:"body"`
+	Headers       []HeaderEntry `toml:"headers"`
+	Timeout       int           `toml:"timeout"`
+	SkipTLSVerify bool          `toml:"skip_tls_verify"`
+	FilterDomains []string      `toml:"filter_domains"`
+	FilterRoles   []string      `toml:"filter_roles"`
 	FilterUsers   []string      `toml:"filter_users"`
 }
 
@@ -160,32 +160,15 @@ type EmailTemplateConfig struct {
 	Body    string `toml:"body"`
 }
 
-// OIDCConfig holds OIDC provider settings from config.toml.
-type OIDCConfig struct {
-	Enabled   bool           `toml:"enabled"`
-	IssuerURL string         `toml:"issuer_url"`
-	LoginURL  string         `toml:"login_url"`
-	KeyPath   string         `toml:"key_path"`
-	Clients   []OIDCClient   `toml:"clients"`
-}
-
-// OIDCClient represents a registered OIDC client.
-type OIDCClient struct {
-	ID           string   `toml:"id"`
-	Secret       string   `toml:"secret"`
-	RedirectURIs []string `toml:"redirect_uris"`
-}
-
 // FileConfig represents the TOML config file structure.
 type FileConfig struct {
-	PasswordPolicy PasswordPolicy  `toml:"password_policy"`
-	PasswordHooks  []WebhookConfig `toml:"password_hooks"`
-	SMS            WebhookConfig   `toml:"sms"`
-	Users          UsersConfig     `toml:"users"`
+	PasswordPolicy PasswordPolicy      `toml:"password_policy"`
+	PasswordHooks  []WebhookConfig     `toml:"password_hooks"`
+	SMS            WebhookConfig       `toml:"sms"`
+	Users          UsersConfig         `toml:"users"`
 	SMTP           SMTPConfig          `toml:"smtp"`
 	Email          EmailTemplateConfig `toml:"email"`
 	UI             UIConfig            `toml:"ui"`
-	OIDC           OIDCConfig          `toml:"oidc"`
 }
 
 // LoadFileConfig reads the TOML config file from CONFIG_PATH (default /data/config.toml).
