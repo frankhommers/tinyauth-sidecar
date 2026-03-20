@@ -32,7 +32,24 @@ func SessionMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 		req.Header.Set("Cookie", cookieHeader)
 		req.Header.Set("X-Forwarded-Host", c.Request.Host)
-		req.Header.Set("X-Forwarded-Uri", c.Request.URL.Path)
+		req.Header.Set("X-Forwarded-Uri", c.Request.URL.RequestURI())
+		req.Header.Set("X-Forwarded-Method", c.Request.Method)
+
+		proto := c.GetHeader("X-Forwarded-Proto")
+		if proto == "" {
+			if c.Request.TLS != nil {
+				proto = "https"
+			} else {
+				proto = "http"
+			}
+		}
+		req.Header.Set("X-Forwarded-Proto", proto)
+
+		forwardedFor := c.GetHeader("X-Forwarded-For")
+		if forwardedFor == "" {
+			forwardedFor = c.ClientIP()
+		}
+		req.Header.Set("X-Forwarded-For", forwardedFor)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
