@@ -23,7 +23,6 @@ func (h *PublicHandler) Register(r *gin.RouterGroup, resetEmailRL, forgotSmsRL, 
 	r.POST("/password-reset/request", resetEmailRL.Middleware(), h.RequestReset)
 	r.POST("/password-reset/confirm", h.ConfirmReset)
 	r.POST("/signup", h.Signup)
-	r.POST("/signup/approve", h.ApproveSignup)
 	r.GET("/health", h.Health)
 	r.GET("/features", h.Features)
 	r.POST("/auth/forgot-password-sms", forgotSmsRL.Middleware(), h.ForgotPasswordSMS)
@@ -35,7 +34,9 @@ func (h *PublicHandler) Health(c *gin.Context) {
 }
 
 func (h *PublicHandler) RequestReset(c *gin.Context) {
-	var req struct{ Username string `json:"username"` }
+	var req struct {
+		Username string `json:"username"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,19 +82,6 @@ func (h *PublicHandler) Signup(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true, "status": status})
-}
-
-func (h *PublicHandler) ApproveSignup(c *gin.Context) {
-	var req struct{ ID string `json:"id"` }
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.account.ApproveSignup(req.ID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func (h *PublicHandler) Features(c *gin.Context) {

@@ -13,16 +13,17 @@ import (
 )
 
 type AdminHandler struct {
-	cfg       *config.Config
-	mail      *service.MailService
-	sms       provider.SMSProvider
-	usersSvc  *service.UserFileService
-	store     *store.Store
-	dockerSvc *service.DockerService
+	cfg        *config.Config
+	mail       *service.MailService
+	sms        provider.SMSProvider
+	usersSvc   *service.UserFileService
+	store      *store.Store
+	dockerSvc  *service.DockerService
+	accountSvc *service.AccountService
 }
 
-func NewAdminHandler(cfg *config.Config, mail *service.MailService, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store, dockerSvc *service.DockerService) *AdminHandler {
-	return &AdminHandler{cfg: cfg, mail: mail, sms: sms, usersSvc: usersSvc, store: st, dockerSvc: dockerSvc}
+func NewAdminHandler(cfg *config.Config, mail *service.MailService, sms provider.SMSProvider, usersSvc *service.UserFileService, st *store.Store, dockerSvc *service.DockerService, accountSvc *service.AccountService) *AdminHandler {
+	return &AdminHandler{cfg: cfg, mail: mail, sms: sms, usersSvc: usersSvc, store: st, dockerSvc: dockerSvc, accountSvc: accountSvc}
 }
 
 // isAdmin checks whether the authenticated user has role "admin".
@@ -56,6 +57,22 @@ func (h *AdminHandler) Register(r *gin.RouterGroup) {
 	admin.POST("/admin/reload-config", h.ReloadConfig)
 	admin.POST("/admin/restart-tinyauth", h.RestartTinyauth)
 	admin.GET("/admin/tinyauth-health", h.TinyauthHealth)
+	admin.POST("/admin/signup/approve", h.ApproveSignup)
+}
+
+func (h *AdminHandler) ApproveSignup(c *gin.Context) {
+	var req struct {
+		ID string `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.accountSvc.ApproveSignup(req.ID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func (h *AdminHandler) TestEmail(c *gin.Context) {

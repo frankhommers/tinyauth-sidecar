@@ -175,7 +175,7 @@ func (s *AccountService) SignupWithPhone(username, email, password, phone string
 		if !s.cfg.UsernameIsEmail && email != "" {
 			_ = s.store.SetEmail(username, email)
 		}
-		return id, nil
+		return "pending", nil
 	}
 	if err := s.users.Upsert(UserRecord{Username: username, Password: hash}); err != nil {
 		return "", err
