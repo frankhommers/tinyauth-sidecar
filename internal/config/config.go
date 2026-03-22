@@ -13,8 +13,6 @@ type Config struct {
 	Port                  string
 	UsersFilePath         string
 	ResetTokenTTLSeconds  int64
-	DisableSignup         bool
-	SignupRequireApproval bool
 	SMTPHost              string
 	SMTPPort              int
 	SMTPUsername          string
@@ -46,8 +44,6 @@ func Load() *Config {
 		Port:                  getEnv("PORT", "8080"),
 		UsersFilePath:         getEnv("USERS_FILE_PATH", "/data/users.txt"),
 		ResetTokenTTLSeconds:  getEnvInt64("RESET_TOKEN_TTL_SECONDS", 3600),
-		DisableSignup:         getEnvBool("DISABLE_SIGNUP", true),
-		SignupRequireApproval: getEnvBool("SIGNUP_REQUIRE_APPROVAL", false),
 		SMTPHost:              getEnv("SMTP_HOST", ""),
 		SMTPPort:              getEnvInt("SMTP_PORT", 587),
 		SMTPUsername:          getEnv("SMTP_USERNAME", ""),

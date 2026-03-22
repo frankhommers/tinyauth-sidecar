@@ -28,15 +28,6 @@ type resetTokenEntry struct {
 	Used      bool
 }
 
-// pendingSignup is an in-memory pending signup record.
-type pendingSignup struct {
-	Username     string
-	Email        string
-	PasswordHash string
-	CreatedAt    int64
-	Approved     bool
-}
-
 // smsResetCode is an in-memory SMS reset code record.
 type smsResetCode struct {
 	Username  string
@@ -56,9 +47,6 @@ type Store struct {
 
 	resetMu     sync.Mutex
 	resetTokens map[string]*resetTokenEntry // key = token
-
-	signupMu sync.Mutex
-	signups  map[string]*pendingSignup // key = id
 
 	smsMu    sync.Mutex
 	smsCodes map[string]*smsResetCode // key = id
@@ -82,7 +70,6 @@ func NewStore(tomlPath string) (*Store, error) {
 		tomlPath:    tomlPath,
 		users:       make(map[string]*UserMeta),
 		resetTokens: make(map[string]*resetTokenEntry),
-		signups:     make(map[string]*pendingSignup),
 		smsCodes:    make(map[string]*smsResetCode),
 	}
 
@@ -283,47 +270,6 @@ func (s *Store) MarkResetTokenUsed(token string) error {
 
 	if rt, ok := s.resetTokens[token]; ok {
 		rt.Used = true
-	}
-	return nil
-}
-
-// ---------- Pending signups (in-memory) ----------
-
-// CreatePendingSignup stores a new pending signup.
-func (s *Store) CreatePendingSignup(id, username, email, passwordHash string, createdAt int64) error {
-	s.signupMu.Lock()
-	defer s.signupMu.Unlock()
-
-	s.signups[id] = &pendingSignup{
-		Username:     username,
-		Email:        email,
-		PasswordHash: passwordHash,
-		CreatedAt:    createdAt,
-		Approved:     false,
-	}
-	return nil
-}
-
-// GetPendingSignup retrieves a pending signup by id.
-// Returns username and passwordHash. Returns empty username if not found.
-func (s *Store) GetPendingSignup(id string) (username, passwordHash string, err error) {
-	s.signupMu.Lock()
-	defer s.signupMu.Unlock()
-
-	ps, ok := s.signups[id]
-	if !ok {
-		return "", "", fmt.Errorf("signup not found")
-	}
-	return ps.Username, ps.PasswordHash, nil
-}
-
-// ApprovePendingSignup marks a pending signup as approved.
-func (s *Store) ApprovePendingSignup(id string) error {
-	s.signupMu.Lock()
-	defer s.signupMu.Unlock()
-
-	if ps, ok := s.signups[id]; ok {
-		ps.Approved = true
 	}
 	return nil
 }

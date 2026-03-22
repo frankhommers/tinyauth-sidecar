@@ -96,7 +96,7 @@ func main() {
 		accountHandler.Register(authed)
 
 		// Admin endpoints
-		adminHandler := handler.NewAdminHandler(cfg, mailSvc, smsProvider, usersSvc, st, dockerSvc, accountSvc)
+		adminHandler := handler.NewAdminHandler(cfg, mailSvc, smsProvider, usersSvc, st, dockerSvc)
 		adminHandler.Register(authed)
 	}
 

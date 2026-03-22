@@ -128,10 +128,6 @@ func (s *AccountService) ResetPassword(token, newPassword, clientIP string) erro
 	return nil
 }
 
-func (s *AccountService) Signup(username, email, password string) (string, error) {
-	return s.SignupWithPhone(username, email, password, "")
-}
-
 func (s *AccountService) validatePassword(password string) error {
 	if len(password) < s.cfg.MinPasswordLength {
 		return fmt.Errorf("password_too_short")
@@ -139,71 +135,6 @@ func (s *AccountService) validatePassword(password string) error {
 	result := zxcvbn.PasswordStrength(password, nil)
 	if result.Score < s.cfg.MinPasswordStrength {
 		return fmt.Errorf("password_too_weak")
-	}
-	return nil
-}
-
-func (s *AccountService) SignupWithPhone(username, email, password, phone string) (string, error) {
-	if username == "" || password == "" {
-		return "", errors.New("username and password required")
-	}
-	if s.cfg.UsernameIsEmail {
-		if !emailRegex.MatchString(username) {
-			return "", errors.New("username must be a valid email address")
-		}
-	}
-	if err := s.validatePassword(password); err != nil {
-		return "", err
-	}
-	if existing, ok, err := s.users.Find(username); err != nil {
-		return "", err
-	} else if ok && existing.Username != "" {
-		return "", errors.New("user already exists")
-	}
-	hash, err := HashPassword(password)
-	if err != nil {
-		return "", err
-	}
-	if s.cfg.SignupRequireApproval {
-		id := uuid.NewString()
-		if err := s.store.CreatePendingSignup(id, username, email, hash, time.Now().Unix()); err != nil {
-			return "", err
-		}
-		if phone != "" {
-			_ = s.store.SetPhone(username, phone)
-		}
-		if !s.cfg.UsernameIsEmail && email != "" {
-			_ = s.store.SetEmail(username, email)
-		}
-		return "pending", nil
-	}
-	if err := s.users.Upsert(UserRecord{Username: username, Password: hash}); err != nil {
-		return "", err
-	}
-	if phone != "" {
-		_ = s.store.SetPhone(username, phone)
-	}
-	if !s.cfg.UsernameIsEmail && email != "" {
-		_ = s.store.SetEmail(username, email)
-	}
-	if err := s.docker.RestartTinyauth(); err != nil {
-		log.Printf("[restart] %v", err)
-	}
-	s.syncPasswordTargets(username, password, hash)
-	return "approved", nil
-}
-
-func (s *AccountService) ApproveSignup(id string) error {
-	username, hash, err := s.store.GetPendingSignup(id)
-	if err != nil {
-		return err
-	}
-	if err := s.users.Upsert(UserRecord{Username: username, Password: hash}); err != nil {
-		return err
-	}
-	_ = s.store.ApprovePendingSignup(id)
-	if err := s.docker.RestartTinyauth(); err != nil {
-		log.Printf("[restart] %v", err)
 	}
 	return nil
 }

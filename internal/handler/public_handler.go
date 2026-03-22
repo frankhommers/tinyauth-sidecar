@@ -22,7 +22,6 @@ func NewPublicHandler(account *service.AccountService, cfg *config.Config) *Publ
 func (h *PublicHandler) Register(r *gin.RouterGroup, resetEmailRL, forgotSmsRL, resetSmsRL *middleware.RateLimiter) {
 	r.POST("/password-reset/request", resetEmailRL.Middleware(), h.RequestReset)
 	r.POST("/password-reset/confirm", h.ConfirmReset)
-	r.POST("/signup", h.Signup)
 	r.GET("/health", h.Health)
 	r.GET("/features", h.Features)
 	r.POST("/auth/forgot-password-sms", forgotSmsRL.Middleware(), h.ForgotPasswordSMS)
@@ -61,34 +60,10 @@ func (h *PublicHandler) ConfirmReset(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
-func (h *PublicHandler) Signup(c *gin.Context) {
-	if h.cfg.DisableSignup {
-		c.JSON(http.StatusForbidden, gin.H{"error": "signups are disabled"})
-		return
-	}
-	var req struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Phone    string `json:"phone"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	status, err := h.account.SignupWithPhone(req.Username, req.Email, req.Password, req.Phone)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"ok": true, "status": status})
-}
-
 func (h *PublicHandler) Features(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"smsEnabled":      h.account.SMSEnabled(),
 		"emailEnabled":    h.cfg.SMTPHost != "",
-		"signupEnabled":   !h.cfg.DisableSignup,
 		"usernameIsEmail": h.cfg.UsernameIsEmail,
 		"backgroundImage": h.cfg.BackgroundImage,
 		"title":           h.cfg.Title,

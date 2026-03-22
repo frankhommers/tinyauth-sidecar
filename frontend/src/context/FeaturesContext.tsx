@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { api } from '../api/client'
 
 interface Features {
-  signupEnabled: boolean
   smsEnabled: boolean
   emailEnabled: boolean
   usernameIsEmail: boolean
@@ -11,7 +10,7 @@ interface Features {
   loaded: boolean
 }
 
-const defaults: Features = { signupEnabled: false, smsEnabled: false, emailEnabled: false, usernameIsEmail: true, backgroundImage: '', title: '', loaded: false }
+const defaults: Features = { smsEnabled: false, emailEnabled: false, usernameIsEmail: true, backgroundImage: '', title: '', loaded: false }
 const FeaturesContext = createContext<Features>(defaults)
 
 export function FeaturesProvider({ children }: { children: ReactNode }) {
@@ -20,7 +19,6 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     api.get('/features').then((res) => {
       setFeatures({
-        signupEnabled: res.data.signupEnabled ?? true,
         smsEnabled: res.data.smsEnabled ?? false,
         emailEnabled: res.data.emailEnabled ?? false,
         usernameIsEmail: res.data.usernameIsEmail ?? true,
@@ -29,7 +27,7 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
         loaded: true,
       })
     }).catch(() => {
-      setFeatures({ ...defaults, signupEnabled: true, loaded: true })
+      setFeatures({ ...defaults, loaded: true })
     })
   }, [])
 
